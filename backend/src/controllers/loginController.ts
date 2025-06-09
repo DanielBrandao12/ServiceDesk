@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { Usuarios } from "../models/usuarios";
+import { Usuarios } from "../models/index";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { jwtKey } from "../config/secrets";
@@ -14,8 +14,8 @@ export const handleLogin = async (
   req: Request<{}, {}, LoginPayload>,
   res: Response
 ): Promise<Response | any> => {
-  const { nome_usuario, senha } = req.body;
-
+  
+  const { nome_usuario, senha } = req.body //|| {nome_usuario:'Daniel', senha:'ftcbp183'};
   if (!senha) {
     return res.status(400).json({ message: "Senha é obrigatória" });
   }
