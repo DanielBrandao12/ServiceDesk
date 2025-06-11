@@ -23,12 +23,12 @@ const Header = ({onExpandeMenu}: HeaderProps) => {
   }
   
   return (
-    <div className="flex flex-row justify-between py-3 border shadow-sm">
+    <div className="flex flex-row justify-between py-3 border shadow-md z-999">
       <div className="flex items-center justify-center p-5"> 
         {closeIcon ? <X size={sizeIcons} onClick={handleClickExpandeMenu} className="cursor-pointer"/> : <Menu onClick={handleClickExpandeMenu} size={sizeIcons} className="cursor-pointer"/>}
       </div>
       <div className="flex flex-row justify-around items-center w-[30%]">
-        <button className="bg-red-700 p-2 text-white rounded-md px-4" onClick={handleNewTicket}>Novo Ticket</button>
+        <button className="bg-background p-2 text-white rounded-md px-4" onClick={handleNewTicket}>Novo Ticket</button>
         <Bell size={sizeIcons} />
         <div className="flex flex-row items-center gap-5">
           <CircleUser size={sizeIcons} />
