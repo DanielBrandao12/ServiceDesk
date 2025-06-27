@@ -1,6 +1,6 @@
 import PaginaPadrao from "../../components/paginaPadrao";
 
-const PageTicket = () => {
+const TicketsClose = () => {
   return (
     <PaginaPadrao>
      
@@ -8,4 +8,4 @@ const PageTicket = () => {
   );
 }
 
-export default PageTicket;
+export default TicketsClose;

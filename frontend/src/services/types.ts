@@ -15,11 +15,13 @@ export interface Ticket {
 }
 
 export interface TicketView extends Ticket{
+    nome_usuarioAtribuido: string;
     status: string;
     categorias: string;
 }
 
 export interface Usuarios {
+    nomeUser: any;
     id_usuario: number;
     nome_completo: string;
     email: string;
@@ -27,6 +29,8 @@ export interface Usuarios {
     nome_usuario: string;
     perfil: string;
 }
+
+
 
 export interface Status {
     id_status: number;

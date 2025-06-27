@@ -78,7 +78,7 @@ export const checkEmails = async () => {
               mensagem,
               chamado.anexos
             );
-            await connection.messageFlagsAdd(message.uid, ['\\Seen']);
+             connection.messageFlagsAdd(message.uid, ['\\Seen']);
             continue;
           }
         }
@@ -97,7 +97,7 @@ export const checkEmails = async () => {
                 },
               ],
             });
-        await connection.messageFlagsAdd(message.uid, ['\\Seen']);
+         connection.messageFlagsAdd(message.uid, ['\\Seen']);
       } catch (error) {
         console.error(`Erro ao processar o e-mail:`, error);
       }
