@@ -1,5 +1,6 @@
 
 export interface Ticket {
+    ticket: any;
     id_ticket: number;
     codigo_ticket: string;
     assunto: string;
@@ -15,6 +16,8 @@ export interface Ticket {
 }
 
 export interface TicketView extends Ticket{
+    ticket: any;
+    respostas: any;
     nome_usuarioAtribuido: string;
     status: string;
     categorias: string;
@@ -73,6 +76,7 @@ export interface Categoria {
 }
 
 export interface HistoricoStatus {
+    nome_status: string;
     id_historico: number;
     data_hora: string;
     id_ticket: number;
@@ -82,5 +86,6 @@ export interface HistoricoStatus {
 
 
 export interface MensagemRetorno {
-    mensagem: string;
+    ticket: Ticket;
+    message: string;
 }

@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
-import {  HistoticoStatus } from '../models/index';
+import {  HistoricoStatus, Status } from '../models/index';
+
 
 
 
@@ -10,7 +11,7 @@ export const createHistorico = async (
   id_usuario: number | null
 ): Promise<void> => {
   try {
-    await HistoticoStatus.create({
+    await HistoricoStatus.create({
       data_hora: new Date(),
       id_ticket,
       id_status,
@@ -26,7 +27,7 @@ export const createHistorico = async (
 export const deleteHistorico = async (idTicket: number): Promise<{ success: boolean; message: string }> => {
   try {
 
-      await HistoticoStatus.destroy({
+      await HistoricoStatus.destroy({
         where: {id_ticket: idTicket}
       })
 
@@ -44,15 +45,32 @@ export const deleteHistorico = async (idTicket: number): Promise<{ success: bool
   }
 };
 
-export const getHistorico = async (req: Request, res: Response): Promise<Response | any> => {
+export const getHistorico = async (req: Request, res: Response): Promise<Response> => {
   const { id } = req.params;
 
   try {
-    const historico = await HistoticoStatus.findAll({
+    const historico = await HistoricoStatus.findAll({
       where: { id_ticket: id },
+      include: [
+        {
+          model: Status,           // modelo do Status
+          as: "status",            // alias definido no relacionamento
+          attributes: ["nome"],    // só traz o campo nome
+        },
+      ],
     });
+    
 
-    return res.status(200).json(historico);
+    // Mapeia para já "achatar" os dados e retornar nome_status direto
+    const historicoFormatado = historico.map((h: any) => ({
+      id_historico: h.id_historico,
+      id_ticket: h.id_ticket,
+      id_status: h.id_status,
+      data_hora: h.data_hora,
+      nome_status: h.status?.nome || "Desconhecido",
+    }));
+console.log(historicoFormatado)
+    return res.status(200).json(historicoFormatado);
   } catch (error: any) {
     console.error("Erro ao tentar encontrar histórico:", error);
     return res.status(500).json({

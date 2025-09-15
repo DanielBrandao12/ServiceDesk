@@ -10,10 +10,14 @@ import { useEffect, useState } from "react";
 import { ChamadasTickets } from "../../services/endpoints/tickets";
 import { chamadasUsers } from "../../services/endpoints/users";
 import type { TicketView } from "../../services/types";
-import Card from "../../components/paginaPadrao/components/card/card";
+import Card from "../../components/card/card";
+
+import { useNavigate } from "react-router-dom";
+
+import { formatarData } from "../../utils/date";
 
 const TicketsOpen = () => {
-  const [filtroAtivo, setFiltroAtivo] = useState<string>("");
+  const [filtroAtivo, setFiltroAtivo] = useState<string>("todos");
   const [filtroPrioridade, setFiltroPrioridade] = useState<string[]>([]);
   const [tickets, setTickets] = useState<TicketView[]>([]);
   const [filteredTickets, setFilteredTickets] = useState<TicketView[]>([]);
@@ -27,16 +31,15 @@ const TicketsOpen = () => {
   const indexFim = indexInicio + itemPage;
   const ticketsPaginados = filteredTickets.slice(indexInicio, indexFim);
 
+  const navigate = useNavigate()
+
   useEffect(() => {
     // Buscar tickets
     ChamadasTickets.listarTickets()
       .then((res) => {
-        // Filtrar apenas os tickets abertos
-        const openTickets = res.filter((data) => data.status !== "Fechado");
-
         // Para cada ticket, buscar o usuário atribuído (se houver)
         Promise.all(
-          openTickets.map(async (ticket) => {
+          res.map(async (ticket) => {
             try {
               if (ticket.atribuido_a) {
                 const user = await chamadasUsers.listarUsuario(
@@ -68,7 +71,7 @@ const TicketsOpen = () => {
             (ticket): ticket is TicketView =>
               ticket !== undefined && ticket !== null
           );
-
+          console.log(validTickets);
           setTickets(validTickets);
         });
       })
@@ -122,7 +125,7 @@ const TicketsOpen = () => {
     } else if (filtroAtivo === "outros") {
       filtrados = filtrados.filter(
         (ticket) =>
-          parseInt(ticket.atribuido_a) && parseInt(ticket.atribuido_a) !== 1//aqui vai ser o id do user logado
+          parseInt(ticket.atribuido_a) && parseInt(ticket.atribuido_a) !== 1 //aqui vai ser o id do user logado
       );
     } else if (filtroAtivo === "nao_atribuidos") {
       filtrados = filtrados.filter((ticket) => !ticket.atribuido_a);
@@ -157,24 +160,25 @@ const TicketsOpen = () => {
     aplicarFiltros();
   }, [tickets, filtroPrioridade, filtroAtivo, ordenacao, busca]);
 
-  const formatarData = (data: string | number | Date) => {
-    const date = new Date(data);
 
-    const dia = String(date.getDate()).padStart(2, "0");
-    const mes = String(date.getMonth() + 1).padStart(2, "0");
-    const ano = date.getFullYear();
-    return `${dia}/${mes}/${ano}`;
-  };
+  const handleTicketSelected = (idTicket : number) => {
+    navigate(`/Ticket/${idTicket}`)
+  }
 
   return (
     <PaginaPadrao>
-      <Card >
+      <div className="w-[100%] flex flex-col  gap-5 p-20 overflow-scroll">
+        {/*Titulo */}
         <span className="text-titulosTabela font-bold text-xl">
           Tickets Abertos
         </span>
-        <div className=" bg-white rounded shadow-md shadow-[#D1D5DB] border border-gray-300  mb-5 max-w-[1400px]  p-6">
+        {/* *** */}
+
+        {/*Div principal */}
+        <Card>
           <div className="flex flex-col">
             <div className="flex flex-row justify-between text-gray-400">
+              {/*Campo de busca */}
               <div
                 className="flex flex-row items-center border border-gray-300 w-[217px] h-[36px] rounded px-2 bg-white cursor-pointer"
                 title="Busque por código do ticket, solicitante, assunto ou técnico"
@@ -188,6 +192,7 @@ const TicketsOpen = () => {
                 />
                 <Search size={20} />
               </div>
+              {/*Filtro */}
               <div
                 onClick={() => setShowFilter(!showFilter)}
                 className="relative flex flex-row items-center gap-2 cursor-pointer"
@@ -227,6 +232,7 @@ const TicketsOpen = () => {
                 )}
               </div>
             </div>
+            {/*Header Filtros */}
             <div className="flex  flex-row justify-between text-gray-400 my-10  font-bold border-b  border-b-[#D1D5DB]">
               <span
                 onClick={() => setFiltroAtivo("todos")}
@@ -313,6 +319,8 @@ const TicketsOpen = () => {
                 </select>
               </div>
             </div>
+
+            {/*Tabela */}
             <div>
               <table
                 className="w-[100%] border border-collapse bg-white rounded overflow-hidden shadow-md
@@ -353,6 +361,7 @@ const TicketsOpen = () => {
                       className={`text-center text-[12px] ${
                         index % 2 === 0 ? "bg-white" : "bg-[#f8f8f8]"
                       } cursor-pointer`}
+                      onClick={() =>handleTicketSelected(ticket.id_ticket)}
                     >
                       <td className="py-3  border-b border-b-[#ddd] w-[20%] whitespace-nowrap overflow-hidden  text-ellipsis">
                         {ticket.codigo_ticket}
@@ -390,13 +399,24 @@ const TicketsOpen = () => {
                       </td>
                       <td className="py-3  border-b border-b-[#ddd] w-[20%] whitespace-nowrap overflow-hidden text-ellipsis">
                         <div className="flex items-center justify-center gap-2 ">
-                          <span>3</span>
-                          <div className="flex items-center ">
-                            <Bell size={15} color="#BD2626" />
-                            <span className="relative bottom-1 text-[#BD2626] font-bold">
-                              2
-                            </span>
-                          </div>
+                          <span> {ticket.respostas.length}</span>
+
+                          {ticket.respostas.some(
+                            (resposta: { lida: boolean }) =>
+                              resposta.lida === false
+                          ) && (
+                            <div className="flex items-center">
+                              <Bell size={15} color="#BD2626" />
+                              <span className="relative bottom-1 text-[#BD2626] font-bold">
+                                {
+                                  ticket.respostas.filter(
+                                    (resposta: { lida: boolean }) =>
+                                      !resposta.lida
+                                  ).length
+                                }
+                              </span>
+                            </div>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -409,6 +429,8 @@ const TicketsOpen = () => {
                 </div>
               )}
             </div>
+
+            {/*Paginação */}
             <div className="flex flex-row justify-between mt-5 text-sm text-[#4B4B4B]">
               <div className="flex items-center gap-2 py-5 ">
                 <span>Exibir</span>
@@ -460,8 +482,8 @@ const TicketsOpen = () => {
               </div>
             </div>
           </div>
-        </div>
-      </Card>
+        </Card>
+      </div>
     </PaginaPadrao>
   );
 };

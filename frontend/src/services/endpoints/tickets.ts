@@ -23,8 +23,9 @@ export const ChamadasTickets = {
       Ticket,
       "assunto" | "email" | "nome_requisitante" | "descricao" | "codigo_ticket" | "data_criacao"
     >
-  ): Promise<Ticket> => {
-    const response = await api.put<Ticket>("/tickets/updateTicket/", dadosTicket);
+  ): Promise<MensagemRetorno> => {
+    const response = await api.put<MensagemRetorno>(`/tickets/updateTicket/${dadosTicket.id_ticket}`, dadosTicket);
+    
     return response.data;
   },
 

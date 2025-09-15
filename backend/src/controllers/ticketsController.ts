@@ -1,11 +1,12 @@
 import { Request, Response } from 'express';
-import { Tickets, viewTickets } from '../models/index';
+import { Tickets, ViewTickets } from '../models/index';
 import { TicketsAttributes } from '../types/tickets';
 import { sendEmail } from '../services/email/sendEMail';
 import { ticketCriadoTemplate } from '../services/email/templates/ticketCriado';
 import { createHistorico, deleteHistorico } from './historicoStatusController';
 import { deleteResposta, getRespostaId, getViewRespostaId } from './respostasController';
 import { createAnexo, deleteAnexo } from './anexoController';
+import { Op } from 'sequelize';
 
 
 type CreateTicketBody = Omit<
@@ -14,7 +15,7 @@ type CreateTicketBody = Omit<
 >;
 
 type UpdateTicketBody = Partial<
-  Omit<TicketsAttributes, "assunto" | "email" | "nome_requisitante" | "descricao" | "codigo_ticket" | "data_criacao">
+  Omit<TicketsAttributes,"id_ticket" | "assunto" | "email" | "nome_requisitante" | "descricao" | "codigo_ticket" | "data_criacao" | "data_conclusao">
 >;
 
 const gerarCodigoTicket = (): string => {
@@ -116,8 +117,9 @@ export const updateTicket = async (
   res: Response
 ): Promise<Response | any> => {
   try {
-    const { id } = req.params;
-
+ 
+    const id  = req.params.id;
+   
     // Validação básica
     if (!id) {
       return res.status(400).json({ message: "O ID do ticket é obrigatório." });
@@ -132,10 +134,11 @@ export const updateTicket = async (
     const dadosTicket = req.body;
 
     // Atualizar o ticket
-    await Tickets.update(dadosTicket, {
+   await Tickets.update(dadosTicket, {
       where: { id_ticket: Number(id) },
     });
 
+    const ticketAtualizado = await Tickets.findOne({ where: { id_ticket: Number(id) } });
     // Se o status foi alterado, cria histórico
     if (dadosTicket.id_status !== undefined && dadosTicket.id_status !== null) {
       // Supondo que id_usuario venha da requisição ou do auth (ajuste conforme sua aplicação)
@@ -144,6 +147,7 @@ export const updateTicket = async (
     }
 
     return res.status(200).json({
+      ticket: ticketAtualizado ,
       message: "Ticket alterado com sucesso!",
     });
   } catch (error: any) {
@@ -157,9 +161,23 @@ export const updateTicket = async (
 
 export const getTickets = async (req: Request, res: Response): Promise<Response | any> => {
   try {
-    const tickets = await viewTickets.findAll();
+    const tickets = await ViewTickets.findAll({
+      where: {
+        status: { [Op.ne]: 'Fechado' } // Op.ne = Not Equal
+      }
+    });
 
-    return res.status(200).json(tickets); // 200 é o status correto para "sucesso"
+    const ticketsComRespostas = await Promise.all(
+      tickets.map(async (ticket) => {
+        const respostas = await getViewRespostaId(ticket.id_ticket);
+        return {
+          ...ticket.dataValues,
+          respostas,
+        };
+      })
+    );
+  
+    return res.status(200).json(ticketsComRespostas);
   } catch (error: any) {
     console.error("Erro ao buscar tickets: ", error);
 
@@ -168,6 +186,7 @@ export const getTickets = async (req: Request, res: Response): Promise<Response 
     });
   }
 };
+
 
 export const getTicketsId = async (req: Request<{ id: string }>, res: Response): Promise<Response | any> => {
   const { id } = req.params;
@@ -236,6 +255,7 @@ export const deleteTicket = async (req: Request, res: Response): Promise<Respons
     });
   }
 };
+
 export const criarChamadoPorEmail = async (emailData:any) => {
   try {
     const { remetente, assunto, mensagem, anexos } = emailData;

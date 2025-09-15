@@ -1,6 +1,6 @@
 
 import { Request, Response } from 'express';
-import {  viewRespostas, Respostas } from '../models/index'; // certifique-se de importar corretamente
+import {  ViewRespostas, Respostas } from '../models/index'; // certifique-se de importar corretamente
 import { ViewRespostasAttributes, RespostasAttributes } from '../types/respostas'; // ajuste o nome conforme seu projeto
 import { enviarRespostaAutomatica } from './emailController';
 import { createAnexo } from './anexoController';
@@ -21,7 +21,7 @@ interface MarcarComoLidaBody {
 
 export const getViewRespostaId = async (id_ticket: number): Promise<ViewRespostasAttributes[]> => {
   try {
-    const respostas = await viewRespostas.findAll({
+    const respostas = await ViewRespostas.findAll({
       where: { id_ticket },
     });
 

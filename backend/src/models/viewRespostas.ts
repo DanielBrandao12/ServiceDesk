@@ -60,6 +60,11 @@ export default function initViewRespostasModel(sequelize: Sequelize): typeof Vie
         type: DataTypes.STRING,
         allowNull: true,
       },
+          lida: {
+        type: DataTypes.BOOLEAN,
+        allowNull: true,
+        defaultValue: false,
+      },
     },
     {
       sequelize,
