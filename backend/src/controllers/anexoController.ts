@@ -15,7 +15,7 @@ export const getAnexoId = async (req: Request, res: Response): Promise<Response 
     });
 
     if (anexos.length === 0) {
-      return res.status(404).json({ message: 'Anexos não encontrados.' });
+      return res.json({ message: 'Anexos não encontrados.' });
     }
 
     return res.status(200).json(anexos);

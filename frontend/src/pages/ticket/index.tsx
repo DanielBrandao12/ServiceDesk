@@ -2,11 +2,13 @@ import { useParams } from "react-router-dom";
 import PaginaPadrao from "../../components/paginaPadrao";
 import Card from "../../components/card/card";
 import { Calendar1, ChartPie, Download, History } from "lucide-react";
-import { useEffect, useState, useRef} from "react";
-import {  useReactToPrint } from "react-to-print";
+import { useEffect, useState, useRef } from "react";
+import { useReactToPrint } from "react-to-print";
 import { ChamadasTickets } from "../../services/endpoints/tickets";
 
-import { type TicketView, type HistoricoStatus } from "../../services/types";
+import { chamadasAnexo } from "../../services/endpoints/anexo";
+
+import { type TicketView, type HistoricoStatus, type Anexo } from "../../services/types";
 
 import { chamadasHistorico } from "../../services/endpoints/historicoStatus";
 import { InfoTicket } from "./componentes/infoTicket";
@@ -14,14 +16,15 @@ import { formatarDataHora } from "../../utils/dateHour";
 import { TicketPrint } from "./componentes/ticketPrint";
 
 const Ticket = () => {
-  
-    const componentRef = useRef<HTMLDivElement>(null);
+
+  const componentRef = useRef<HTMLDivElement>(null);
   const [abaAtiva, setAbaAtiva] = useState("mensagens");
   const { idTicket } = useParams<{ idTicket: string }>();
   const idTicketNumber = idTicket ? parseInt(idTicket, 10) : null;
   const [ticket, setTicket] = useState<TicketView>();
   const [loadTicket, setLoadTicket] = useState<boolean>(false)
   const [historicoStatus, setHistoricoStatus] = useState<HistoricoStatus[]>([]);
+  const [anexos, setAnexos] = useState<Anexo[]>([])
 
   useEffect(() => {
     if (!idTicketNumber) return;
@@ -40,11 +43,55 @@ const Ticket = () => {
       setHistoricoStatus(res);
       console.log(res);
     });
+
   }, [idTicketNumber, loadTicket]);
+
+  useEffect(() => {
+    chamadasAnexo.listarAnexos(ticket?.ticket.codigo_ticket).then((res) => {
+
+      if (Array.isArray(res)) {
+        setAnexos(res); // só seta se for array
+        console.log(res);
+      } else {
+        console.log(res);
+        // opcional: setAnexos([]) pra limpar a lista
+      }
+    });
+  }, [ticket]);
+
+  const downloadAnexo = async (id: number) => {
+    try {
+      const response = await chamadasAnexo.listarAnexoId(id);
+      const contentType = response.headers["content-type"] || "application/octet-stream";
+
+      // tenta extrair o nome do arquivo do header
+      let fileName = "arquivo";
+      const contentDisposition = response.headers["content-disposition"];
+      if (contentDisposition) {
+        const match = contentDisposition.match(/filename="?([^"]+)"?/);
+        if (match && match[1]) fileName = match[1];
+      }
+
+      const blob = new Blob([response.data], { type: contentType });
+      const url = window.URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Erro ao baixar anexo:", error);
+    }
+  };
+
 
 
   const handlePrint = useReactToPrint({
-     contentRef: componentRef,
+    contentRef: componentRef,
     documentTitle: `Ticket-${ticket?.ticket.codigo_ticket}`,
   });
 
@@ -98,17 +145,16 @@ const Ticket = () => {
                 <div>
                   <h3 className="font-semibold text-gray-700 mb-2">Anexos</h3>
                   <div className="flex items-center gap-6 text-sm">
-                    {Array(3)
-                      .fill(0)
-                      .map((_, i) => (
-                        <div
-                          key={i}
-                          className="flex items-center gap-1 cursor-pointer text-gray-700 hover:text-[#BD2626]"
-                        >
-                          <span>Anexo {i + 1}</span>
-                          <Download size={14} />
-                        </div>
-                      ))}
+                    {anexos.map((item, i) => (
+                      <div
+                        key={i}
+                        onClick={() => (downloadAnexo(item.id))}
+                        className="flex items-center gap-1 cursor-pointer text-gray-700 hover:text-[#BD2626]"
+                      >
+                        <span>Anexo {i + 1}</span>
+                        <Download size={14} />
+                      </div>
+                    ))}
                   </div>
                 </div>
 
@@ -117,21 +163,19 @@ const Ticket = () => {
                   <div className="flex gap-10 border-b border-gray-300">
                     <button
                       onClick={() => setAbaAtiva("mensagens")}
-                      className={`pb-2 text-sm font-medium ${
-                        abaAtiva === "mensagens"
+                      className={`pb-2 text-sm font-medium ${abaAtiva === "mensagens"
                           ? "border-b-2 border-[#BD2626] text-[#BD2626]"
                           : "text-gray-500 hover:text-gray-700"
-                      }`}
+                        }`}
                     >
                       Mensagens
                     </button>
                     <button
                       onClick={() => setAbaAtiva("anotacoes")}
-                      className={`pb-2 text-sm font-medium ${
-                        abaAtiva === "anotacoes"
+                      className={`pb-2 text-sm font-medium ${abaAtiva === "anotacoes"
                           ? "border-b-2 border-[#BD2626] text-[#BD2626]"
                           : "text-gray-500 hover:text-gray-700"
-                      }`}
+                        }`}
                     >
                       Anotações internas
                     </button>
@@ -196,7 +240,7 @@ const Ticket = () => {
 
           {/* Coluna Direita */}
           <div className="w-1/4 flex flex-col gap-6">
-            <InfoTicket ticket={ticket} setLoadTicket={()=>setLoadTicket(!loadTicket)} handlePrint = {handlePrint}/>
+            <InfoTicket ticket={ticket} setLoadTicket={() => setLoadTicket(!loadTicket)} handlePrint={handlePrint} />
 
             <Card className="h-40 ">
               <div className="flex items-center  justify-between py-4 text-xl font-bold ">
@@ -233,7 +277,7 @@ const Ticket = () => {
           </div>
         </div>
       </div>
-            {/* componente invisível só para impressão */}
+      {/* componente invisível só para impressão */}
       <div style={{ display: "none" }}>
         <TicketPrint
           ref={componentRef}

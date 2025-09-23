@@ -7,6 +7,6 @@ const router = Router();
 router.get('/:id', getAnexoId);
 
 // Rota para fazer o download de um anexo específico
-router.get('/anexo/:id', getAnexos);
+router.get('/getAnexo/:id', getAnexos);
 
 export default router;

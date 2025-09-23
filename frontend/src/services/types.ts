@@ -59,6 +59,8 @@ export interface RespostaView extends Resposta {
 }
 
 export interface Anexo {
+    headers: any;
+    data: any;
     id: number;
     nome: string;
     tipo: string;

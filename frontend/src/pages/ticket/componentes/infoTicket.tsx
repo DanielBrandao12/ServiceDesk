@@ -24,10 +24,12 @@ import type {
   Status,
   Usuarios,
   TicketView,
+
 } from "../../../services/types";
 import { formatarDataHora } from "../../../utils/dateHour";
 import { ChamadasTickets } from "../../../services/endpoints/tickets";
 import Alert from "../../../components/alert";
+
 
 interface TicketProps {
   ticket?: TicketView; // array de tickets
@@ -58,6 +60,10 @@ export const InfoTicket: React.FC<TicketProps> = ({
   const [message, setMessage] = useState<string>("")
   const [showConfirm, setShowConfirm] = useState(false);
 
+ 
+  
+  const listPrioridade: string[] = ["Prioridade Baixa", "Prioridade Média", "Prioridade Alta"]
+
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -87,30 +93,27 @@ export const InfoTicket: React.FC<TicketProps> = ({
 
       setTecnico(tecnicoEncontrado);
     });
-    console.log(ticket);
+
+
+
   }, [ticket]);
 
-  const salvarEdicao = async () => {
-    const dados: any = {
-      id_ticket: ticket?.ticket.id_ticket,
-      id_status: idStatus,
-      atribuido_a: idTecnico,
-      nivel_prioridade: "Prioridade " + prioridade,
-      id_categoria: idCategoria,
-    };
-
-    const ticketAlterado = await ChamadasTickets.editarTicket(dados).then(
-      (res) => {
-        return res;
-      }
-    );
-
-    setLoadTicket();
-
-    setEdit(!edit);
-    setShowAlert(!showAlert)
-    setMessage(ticketAlterado.message);
+const salvarEdicao = async () => {
+  const dados: any = {
+    id_ticket: ticket?.ticket.id_ticket,
+    id_status: idStatus ?? ticket?.ticket.id_status, // usa o novo valor se existir, senão mantém o original
+    atribuido_a: idTecnico ?? parseInt(ticket?.ticket.atribuido_a),
+    nivel_prioridade: prioridade || ticket?.ticket.nivel_prioridade,
+    id_categoria: idCategoria ?? ticket?.ticket.id_categoria,
   };
+
+  const ticketAlterado = await ChamadasTickets.editarTicket(dados);
+  setLoadTicket();
+  setEdit(false);
+  setShowAlert(true);
+  setMessage(ticketAlterado.message);
+};
+
 
 
   const excluirTicket = async () => {
@@ -268,9 +271,17 @@ export const InfoTicket: React.FC<TicketProps> = ({
               value={prioridade}
               onChange={(e) => setPrioridade(e.target.value)}
             >
-              <option value="Baixa">Baixa</option>
-              <option value="Média">Média</option>
-              <option value="Alta">Alta</option>
+              {
+                listPrioridade.map((item, index)=>(
+                    <option  key={index} value={item}  className={
+                      item === ticket?.ticket.prioridade
+                        ? "text-green-600"
+                        : ""
+                    }
+                    title={prioridade}
+                    >{item}</option>
+                ))
+              }
             </select>
           </div>
 
