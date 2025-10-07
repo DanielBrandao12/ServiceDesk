@@ -49,6 +49,8 @@ export interface Resposta {
     conteudo: string;
     id_usuario: number;
     id_ticket: number;
+    codigoTicket: string;
+    remetente: string
     lida: boolean;
 }
 

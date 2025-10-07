@@ -2,9 +2,9 @@ import api from "../api";
 
 import type { Resposta } from "../types";
 
-export const chamadasRelatorio = {
+export const chamadasRespostas = {
     criarResposta: async (dadosResposta: Omit<Resposta, "id_Resposta" | "data_hora">): Promise<Resposta> => {
-        const response = await api.post<Resposta>("/resposta/createResposta", dadosResposta)
+        const response = await api.post<Resposta>("/respostas/createResposta", dadosResposta)
         return response.data
     },
 

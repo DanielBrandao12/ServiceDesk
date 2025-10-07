@@ -14,6 +14,7 @@ import { chamadasHistorico } from "../../services/endpoints/historicoStatus";
 import { InfoTicket } from "./componentes/infoTicket";
 import { formatarDataHora } from "../../utils/dateHour";
 import { TicketPrint } from "./componentes/ticketPrint";
+import { Mensagens } from "./componentes/mensagens";
 
 const Ticket = () => {
 
@@ -25,6 +26,7 @@ const Ticket = () => {
   const [loadTicket, setLoadTicket] = useState<boolean>(false)
   const [historicoStatus, setHistoricoStatus] = useState<HistoricoStatus[]>([]);
   const [anexos, setAnexos] = useState<Anexo[]>([])
+  const [close, setClose] = useState<boolean>(false)
 
   useEffect(() => {
     if (!idTicketNumber) return;
@@ -144,8 +146,10 @@ const Ticket = () => {
                 {/* Anexos */}
                 <div>
                   <h3 className="font-semibold text-gray-700 mb-2">Anexos</h3>
+
                   <div className="flex items-center gap-6 text-sm">
-                    {anexos.map((item, i) => (
+
+                    {anexos.length > 0 ? (anexos.map((item, i) => (
                       <div
                         key={i}
                         onClick={() => (downloadAnexo(item.id))}
@@ -154,7 +158,7 @@ const Ticket = () => {
                         <span>Anexo {i + 1}</span>
                         <Download size={14} />
                       </div>
-                    ))}
+                    ))) : (<span>Sem anexos</span>)}
                   </div>
                 </div>
 
@@ -164,8 +168,8 @@ const Ticket = () => {
                     <button
                       onClick={() => setAbaAtiva("mensagens")}
                       className={`pb-2 text-sm font-medium ${abaAtiva === "mensagens"
-                          ? "border-b-2 border-[#BD2626] text-[#BD2626]"
-                          : "text-gray-500 hover:text-gray-700"
+                        ? "border-b-2 border-[#BD2626] text-[#BD2626]"
+                        : "text-gray-500 hover:text-gray-700"
                         }`}
                     >
                       Mensagens
@@ -173,8 +177,8 @@ const Ticket = () => {
                     <button
                       onClick={() => setAbaAtiva("anotacoes")}
                       className={`pb-2 text-sm font-medium ${abaAtiva === "anotacoes"
-                          ? "border-b-2 border-[#BD2626] text-[#BD2626]"
-                          : "text-gray-500 hover:text-gray-700"
+                        ? "border-b-2 border-[#BD2626] text-[#BD2626]"
+                        : "text-gray-500 hover:text-gray-700"
                         }`}
                     >
                       Anotações internas
@@ -184,55 +188,65 @@ const Ticket = () => {
                   {/* Conteúdo da Aba */}
                   {abaAtiva === "mensagens" ? (
                     /*Mensagens */
-                    <div className="mt-4 p-4 bg-white border rounded-lg shadow-sm">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <span>Enviado por:</span>
+                    <div>
+                      <div className="mt-4 p-4 bg-white border rounded-lg shadow-sm">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <span>Enviado por:</span>
 
-                          <span className="font-medium">
-                            {ticket?.respostas.at(-1)?.id_usuario
-                              ? ticket?.respostas.at(-1)?.nome_usuario
-                              : ticket?.respostas.at(-1)?.nome_requisitante}
+                            <span className="font-medium">
+                              {ticket?.respostas.at(-1)?.id_usuario
+                                ? ticket?.respostas.at(-1)?.nome_usuario
+                                : ticket?.respostas.at(-1)?.nome_requisitante}
+                            </span>
+                          </div>
+                          <span className="text-xs text-gray-500">
+                            {ticket?.respostas.at(-1)?.data_hora}
                           </span>
                         </div>
-                        <span className="text-xs text-gray-500">
-                          {ticket?.respostas.at(-1)?.data_hora}
-                        </span>
+                        <p
+                          className="text-sm leading-relaxed text-gray-700"
+                          dangerouslySetInnerHTML={{
+                            __html: ticket?.respostas.at(-1)?.conteudo || "",
+                          }}
+                        />
                       </div>
-                      <p
-                        className="text-sm leading-relaxed text-gray-700"
-                        dangerouslySetInnerHTML={{
-                          __html: ticket?.respostas.at(-1)?.conteudo || "",
-                        }}
-                      />
+                      <div className="flex justify-end mt-4 p-4">
+                        <button onClick={() => setClose(true)} className="text-sm font-medium text-[#BD2626] hover:underline">
+                          Ver todas
+                        </button>
+                      </div>
                     </div>
                   ) : (
                     /*anotações  ainda não tem tabela no banco*/
-                    <div className="mt-4 p-4 bg-white border rounded-lg shadow-sm">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <span>Criado por:</span>
+                    <div>
 
-                          <span className="font-medium">Daniel</span>
+                      <div className="mt-4 p-4 bg-white border rounded-lg shadow-sm">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <span>Criado por:</span>
+
+                            <span className="font-medium">Daniel</span>
+                          </div>
+                          <span className="text-xs text-gray-500">
+                            02/05/2025 - 13:25
+                          </span>
                         </div>
-                        <span className="text-xs text-gray-500">
-                          02/05/2025 - 13:25
-                        </span>
+                        <p className="text-sm text-gray-700 leading-relaxed">
+                          Lorem ipsum dolor sit amet. Eos odio quos eum minus
+                          ratione sit sint eius est error nostrum est dolor
+                          aspernatur aut accusamus praesentium. Ut delectus
+                          aliquam aut atque beatae sit harum animi! Quo ducimus
+                          sequi est iusto fuga qui atque rerum et earum voluptate.
+                        </p>
                       </div>
-                      <p className="text-sm text-gray-700 leading-relaxed">
-                        Lorem ipsum dolor sit amet. Eos odio quos eum minus
-                        ratione sit sint eius est error nostrum est dolor
-                        aspernatur aut accusamus praesentium. Ut delectus
-                        aliquam aut atque beatae sit harum animi! Quo ducimus
-                        sequi est iusto fuga qui atque rerum et earum voluptate.
-                      </p>
+                      <div className="flex justify-end mt-4 p-4">
+                        <button onClick={() => setClose(true)} className="text-sm font-medium text-[#BD2626] hover:underline">
+                          Ver todas
+                        </button>
+                      </div>
                     </div>
                   )}
-                  <div className="flex justify-end mt-4 p-4">
-                    <button className="text-sm font-medium text-[#BD2626] hover:underline">
-                      Ver todas
-                    </button>
-                  </div>
                 </div>
               </div>
             </Card>
@@ -275,7 +289,21 @@ const Ticket = () => {
               </div>
             </Card>
           </div>
+
         </div>
+
+        {
+          close && (
+            <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+              <div className="flex flex-col items-center text-center gap-4">
+                <Mensagens onClose={() => setClose(false)} mensagens={ticket?.respostas} codigoTicket={ticket?.ticket.codigo_ticket} id_ticket={ticket?.ticket.id_ticket} remetente={ticket?.ticket.email}/>
+              </div>
+            </div>
+          )
+        }
+
+
+
       </div>
       {/* componente invisível só para impressão */}
       <div style={{ display: "none" }}>
@@ -286,6 +314,8 @@ const Ticket = () => {
           formatarDataHora={formatarDataHora}
         />
       </div>
+
+
     </PaginaPadrao>
   );
 };

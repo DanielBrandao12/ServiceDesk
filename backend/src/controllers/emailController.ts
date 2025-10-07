@@ -21,7 +21,7 @@ export const enviarRespostaAutomatica = async (
       from: process.env.EMAIL_USER,
       to: remetente,
       subject: `Atualização do chamado - ${codigoTicket}`,
-      html: mensagem ,//criar um template para respostas
+      html: mensagem,//criar um template para respostas
     });
 
     console.log(`Resposta automática enviada para: ${remetente}`);
@@ -55,18 +55,19 @@ export const checkEmails = async () => {
       try {
         const parsed = await simpleParser(message.source);
 
+        const mensagemLimpa = limparMensagemEmail(parsed.html || parsed.text);
+
         const chamado = {
           remetente: parsed.from?.text || parsed.from || "Desconhecido",
           assunto: parsed.subject || "Sem assunto",
-          mensagem: parsed.html || parsed.text || "Sem mensagem",
-          anexos: parsed.attachments.map((att) => ({
+          mensagem: mensagemLimpa || "Sem mensagem",
+          anexos: parsed.attachments.map(att => ({
             nome: att.filename,
             tipo: att.contentType,
             tamanho: att.size,
             arquivo: att.content,
           })),
         };
-
         const codigoTicket = extrairCodigoTicket(chamado.assunto);
 
         if (codigoTicket) {
@@ -78,26 +79,26 @@ export const checkEmails = async () => {
               mensagem,
               chamado.anexos
             );
-             connection.messageFlagsAdd(message.uid, ['\\Seen']);
+            connection.messageFlagsAdd(message.uid, ['\\Seen']);
             continue;
           }
         }
 
         const ticketCriado = await criarChamadoPorEmail(chamado);
-    
-           await sendEmail({
-              to: chamado.remetente,
-              subject: `Chamado Criado - ${ticketCriado.ticketCriado?.codigo_ticket}`,
-              html: ticketCriadoTemplate(ticketCriado.ticketCriado?.codigo_ticket ),
-              attachments: [
-                {
-                  filename: "logo.png",
-                  path: "../backend/public/images/logo.png",
-                  cid: "logo",
-                },
-              ],
-            });
-         connection.messageFlagsAdd(message.uid, ['\\Seen']);
+
+        await sendEmail({
+          to: chamado.remetente,
+          subject: `Chamado Criado - ${ticketCriado.ticketCriado?.codigo_ticket}`,
+          html: ticketCriadoTemplate(ticketCriado.ticketCriado?.codigo_ticket),
+          attachments: [
+            {
+              filename: "logo.png",
+              path: "../backend/public/images/logo.png",
+              cid: "logo",
+            },
+          ],
+        });
+        connection.messageFlagsAdd(message.uid, ['\\Seen']);
       } catch (error) {
         console.error(`Erro ao processar o e-mail:`, error);
       }
@@ -117,3 +118,41 @@ const extrairCodigoTicket = (assunto: string) => {
   const match = assunto.match(regex);
   return match ? match[1] : null; // Retorna o código se encontrado, caso contrário retorna null
 };
+
+const limparMensagemEmail = (html: any) => {
+  if (!html) return "";
+
+  // Lista de padrões comuns em vários provedores
+  const padroes = [
+    /<div id=["']?divRplyFwdMsg["']?>/i, // Outlook
+    /<div class=["']?gmail_quote["']?>/i, // Gmail
+    /<blockquote class=["']?gmail_quote["']?>/i, // Gmail
+    /-----Mensagem original-----/i, // Outlook PT-BR
+    /On .*? wrote:/i, // Gmail/Yahoo/Apple Mail EN
+    /Em .*? escreveu:/i, // Gmail PT-BR
+    /<hr/i, // Outlook separador
+    /<div class=["']?yahoo_quoted["']?>/i, // Yahoo Mail
+    /<div class=["']?replyContainer["']?>/i, // Apple Mail
+    /<div class=["']?moz-cite-prefix["']?>/i, // Thunderbird
+    /<blockquote/i, // fallback genérico
+  ];
+
+  // Encontra a primeira correspondência e corta o HTML ali
+  let corte = html.length;
+  for (const padrao of padroes) {
+    const match = html.search(padrao);
+    if (match !== -1 && match < corte) {
+      corte = match;
+    }
+  }
+  let atual = html.slice(0, corte);
+
+  // Remove tags HTML se quiser texto puro
+  atual = atual
+    .replace(/<\/?[^>]+(>|$)/g, "")
+    .replace(/&nbsp;/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  return atual;
+}
