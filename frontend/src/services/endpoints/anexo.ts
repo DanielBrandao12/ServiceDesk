@@ -4,7 +4,7 @@ import type { Anexo } from "../types";
 
 export const chamadasAnexo = {
     //Busca anexos relacionados a um ticket ou resposta
-    listarAnexos: async (id: string) : Promise<Anexo> =>{
+    listarAnexos: async (id: string | number) : Promise<Anexo> =>{
         const response = await api.get<Anexo>(`/anexo/${id}`)
         return response.data
     },

@@ -15,7 +15,7 @@ interface Conteudo {
 }
 
 interface MarcarComoLidaBody {
-  ids: number[];
+  id: number;
 }
 
 
@@ -124,22 +124,16 @@ export const createResposta = async (
 
 
 export const marcarComoLida = async (
-  req: Request<{}, {}, MarcarComoLidaBody>,
+  req: Request<{}, {}, { id: number }>,
   res: Response
 ): Promise<Response | any> => {
   try {
-    const { ids } = req.body;
-
-    if (!ids || !Array.isArray(ids) || ids.length === 0) {
-      return res
-        .status(400)
-        .json({ message: "IDs das respostas são obrigatórios." });
-    }
+    const { id } = req.body;
 
     const [linhasAtualizadas] = await Respostas.update(
       { lida: true },
       {
-        where: { id_resposta: ids },
+        where: { id_resposta: id },
       }
     );
 

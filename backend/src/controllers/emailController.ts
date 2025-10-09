@@ -119,25 +119,31 @@ const extrairCodigoTicket = (assunto: string) => {
   return match ? match[1] : null; // Retorna o código se encontrado, caso contrário retorna null
 };
 
-const limparMensagemEmail = (html: any) => {
-  if (!html) return "";
+const  limparMensagemEmail = (html: string | undefined) => {
+    if (!html) return "";
 
-  // Lista de padrões comuns em vários provedores
+  // 1️⃣ Remove <head>, <style> e <script> — só lixo técnico
+  html = html
+    .replace(/<head[\s\S]*?<\/head>/gi, "")
+    .replace(/<style[\s\S]*?<\/style>/gi, "")
+    .replace(/<script[\s\S]*?<\/script>/gi, "");
+
+  // 2️⃣ Define padrões que marcam o início da mensagem anterior (vários provedores)
   const padroes = [
     /<div id=["']?divRplyFwdMsg["']?>/i, // Outlook
     /<div class=["']?gmail_quote["']?>/i, // Gmail
     /<blockquote class=["']?gmail_quote["']?>/i, // Gmail
     /-----Mensagem original-----/i, // Outlook PT-BR
-    /On .*? wrote:/i, // Gmail/Yahoo/Apple Mail EN
+    /On .*? wrote:/i, // Gmail/Apple Mail EN
     /Em .*? escreveu:/i, // Gmail PT-BR
     /<hr/i, // Outlook separador
-    /<div class=["']?yahoo_quoted["']?>/i, // Yahoo Mail
+    /<div class=["']?yahoo_quoted["']?>/i, // Yahoo
     /<div class=["']?replyContainer["']?>/i, // Apple Mail
     /<div class=["']?moz-cite-prefix["']?>/i, // Thunderbird
     /<blockquote/i, // fallback genérico
   ];
 
-  // Encontra a primeira correspondência e corta o HTML ali
+  // 3️⃣ Corta o HTML na primeira correspondência de qualquer padrão
   let corte = html.length;
   for (const padrao of padroes) {
     const match = html.search(padrao);
@@ -147,11 +153,11 @@ const limparMensagemEmail = (html: any) => {
   }
   let atual = html.slice(0, corte);
 
-  // Remove tags HTML se quiser texto puro
+  // 4️⃣ Limpa tags vazias e espaços inúteis (mantendo a estrutura visual)
   atual = atual
-    .replace(/<\/?[^>]+(>|$)/g, "")
-    .replace(/&nbsp;/g, " ")
-    .replace(/\s+/g, " ")
+    .replace(/<div[^>]*>\s*<\/div>/gi, "") // remove divs vazias
+    .replace(/<p[^>]*>\s*<\/p>/gi, "") // remove parágrafos vazios
+    .replace(/\s{2,}/g, " ") // normaliza espaços
     .trim();
 
   return atual;

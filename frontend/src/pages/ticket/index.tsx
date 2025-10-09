@@ -15,6 +15,7 @@ import { InfoTicket } from "./componentes/infoTicket";
 import { formatarDataHora } from "../../utils/dateHour";
 import { TicketPrint } from "./componentes/ticketPrint";
 import { Mensagens } from "./componentes/mensagens";
+import { downloadAnexo } from "../../utils/downloadAnexo";
 
 const Ticket = () => {
 
@@ -28,67 +29,71 @@ const Ticket = () => {
   const [anexos, setAnexos] = useState<Anexo[]>([])
   const [close, setClose] = useState<boolean>(false)
 
-  useEffect(() => {
-    if (!idTicketNumber) return;
-
-    ChamadasTickets.listarTicket(idTicketNumber)
-      .then((res) => {
-        console.log("Ticket encontrado:", res);
-        setTicket(res);
-        console.log(ticket);
-      })
-      .catch((err) => {
-        console.error("Erro ao buscar tickets:", err);
-      });
-
-    chamadasHistorico.getHistorico(idTicketNumber).then((res) => {
-      setHistoricoStatus(res);
-      console.log(res);
-    });
-
-  }, [idTicketNumber, loadTicket]);
-
-  useEffect(() => {
-    chamadasAnexo.listarAnexos(ticket?.ticket.codigo_ticket).then((res) => {
-
-      if (Array.isArray(res)) {
-        setAnexos(res); // só seta se for array
-        console.log(res);
-      } else {
-        console.log(res);
-        // opcional: setAnexos([]) pra limpar a lista
-      }
-    });
-  }, [ticket]);
-
-  const downloadAnexo = async (id: number) => {
+  const carregarTicket = async () => {
     try {
-      const response = await chamadasAnexo.listarAnexoId(id);
-      const contentType = response.headers["content-type"] || "application/octet-stream";
-
-      // tenta extrair o nome do arquivo do header
-      let fileName = "arquivo";
-      const contentDisposition = response.headers["content-disposition"];
-      if (contentDisposition) {
-        const match = contentDisposition.match(/filename="?([^"]+)"?/);
-        if (match && match[1]) fileName = match[1];
-      }
-
-      const blob = new Blob([response.data], { type: contentType });
-      const url = window.URL.createObjectURL(blob);
-
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = fileName;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-
-      window.URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error("Erro ao baixar anexo:", error);
+      if (!idTicketNumber) return;
+      const res = await ChamadasTickets.listarTicket(idTicketNumber);
+      console.log("Ticket encontrado:", res);
+      setTicket(res);
+    } catch (err) {
+      console.error("Erro ao buscar ticket:", err);
     }
   };
+
+  const carregarHistorico = async () => {
+    try {
+      if (!idTicketNumber) return;
+      const res = await chamadasHistorico.getHistorico(idTicketNumber);
+      setHistoricoStatus(res);
+      console.log("Histórico:", res);
+    } catch (err) {
+      console.error("Erro ao buscar histórico:", err);
+    }
+  };
+
+
+  useEffect(() => {
+   
+
+
+  carregarTicket();
+  carregarHistorico();
+
+  // Atualiza automaticamente a cada 60 segundos
+  const intervalo = setInterval(() => {
+    carregarTicket();
+    
+  }, 60000);
+
+  // Limpa o intervalo ao desmontar o componente ou mudar o ticket
+  return () => clearInterval(intervalo);
+
+}, [idTicketNumber, loadTicket]);
+
+
+
+  useEffect(() => {
+  if (!ticket?.ticket?.codigo_ticket) return;
+
+  const carregarAnexos = async () => {
+    try {
+      const res = await chamadasAnexo.listarAnexos(ticket.ticket.codigo_ticket);
+      if (Array.isArray(res)) {
+        setAnexos(res);
+        console.log("Anexos:", res);
+      } else {
+        setAnexos([]);
+        console.warn("Resposta inesperada ao listar anexos:", res);
+      }
+    } catch (err) {
+      console.error("Erro ao carregar anexos:", err);
+    }
+  };
+
+  carregarAnexos();
+  }, [ticket]);
+
+
 
 
 
@@ -152,10 +157,10 @@ const Ticket = () => {
                     {anexos.length > 0 ? (anexos.map((item, i) => (
                       <div
                         key={i}
-                        onClick={() => (downloadAnexo(item.id))}
+                        onClick={() => (downloadAnexo(item.id, item.nome))}
                         className="flex items-center gap-1 cursor-pointer text-gray-700 hover:text-[#BD2626]"
                       >
-                        <span>Anexo {i + 1}</span>
+                        <span>{item.nome} {i + 1}</span>
                         <Download size={14} />
                       </div>
                     ))) : (<span>Sem anexos</span>)}
@@ -296,7 +301,12 @@ const Ticket = () => {
           close && (
             <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
               <div className="flex flex-col items-center text-center gap-4">
-                <Mensagens onClose={() => setClose(false)} mensagens={ticket?.respostas} codigoTicket={ticket?.ticket.codigo_ticket} id_ticket={ticket?.ticket.id_ticket} remetente={ticket?.ticket.email}/>
+                <Mensagens onClose={() => setClose(false)} carregarMensagens={()=> carregarTicket()}
+                  mensagens={ticket?.respostas}
+                  codigoTicket={ticket?.ticket.codigo_ticket}
+                  id_ticket={ticket?.ticket.id_ticket}
+                  remetente={ticket?.ticket.email}
+                />
               </div>
             </div>
           )

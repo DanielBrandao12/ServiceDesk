@@ -55,6 +55,7 @@ export interface Resposta {
 }
 
 export interface RespostaView extends Resposta {
+  anexos: any;
      nome_usuario: string;
     email: string;
     nome_requisitante: string;

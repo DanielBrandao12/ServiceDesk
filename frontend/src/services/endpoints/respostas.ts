@@ -9,20 +9,19 @@ export const chamadasRespostas = {
     },
 
     //Somente altera a mensagem como lida!
-    editarResposta: async (idsRespostas: Omit<Resposta[],
-        "data_hora" | "conteudo" | "id_usuario" | "id_ticket" | "lida"
-    >): Promise<Resposta[]> => {
-        const response = await api.put<Resposta[]>(`/resposta/updateResposta`, idsRespostas)
+    editarResposta: async (idResposta: number): Promise<Resposta> => {
+
+        const response = await api.put<Resposta>(`/respostas/updateResposta`, {id: idResposta})
         return response.data
     },
 
     listarRespostas: async (): Promise<Resposta[]> => {
-        const response = await api.get<Resposta[]>("/resposta/getRespostas")
+        const response = await api.get<Resposta[]>("/respostas/getRespostas")
         return response.data
     },
 
     listarRespostaId: async () : Promise<Resposta[]> => {
-        const response = await api.get<Resposta[]>(`/resposta/getNãoLidas`)
+        const response = await api.get<Resposta[]>(`/respostas/getNãoLidas`)
         return response.data
     },
 
