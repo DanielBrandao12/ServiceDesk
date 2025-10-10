@@ -26,6 +26,7 @@ export const Mensagens = ({ onClose, mensagens, codigoTicket, id_ticket, remeten
   const [conteudo, setConteudo] = useState<string>('');
   const [temNaoLidasAcima, setTemNaoLidasAcima] = useState(false);
   const [error, setError] = useState<string>('');
+  const [arquivos, setArquivos] = useState<File[]>([]);
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -43,7 +44,6 @@ export const Mensagens = ({ onClose, mensagens, codigoTicket, id_ticket, remeten
       scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
     }
   }, [mensagemComAnexo]);
-
 
   useEffect(() => {
     // Carrega anexos ao montar o componente
@@ -99,18 +99,24 @@ export const Mensagens = ({ onClose, mensagens, codigoTicket, id_ticket, remeten
         return;
       }
 
-      const dados: any = {
-        id_ticket,
-        id_usuario: 1, // ideal: pegar do contexto/autenticação
-        conteudo: conteudo.trim(),
-        codigoTicket,
-        remetente,
-      };
+  const anexoData = new FormData();
+// campos da resposta
+anexoData.append("id_ticket", id_ticket.toString());
+anexoData.append("id_usuario", "1");
+anexoData.append("conteudo", conteudo.trim());
+anexoData.append("codigoTicket", codigoTicket);
+anexoData.append("remetente", remetente);
 
-      console.log("Enviando resposta:", dados);
+// arquivos
+arquivos.forEach(file => {
+  anexoData.append("arquivos", file);
+});
+      console.log("Enviando resposta:", anexoData);
 
-      await chamadasRespostas.criarResposta(dados);
+     const res = await chamadasRespostas.criarResposta(anexoData);
 
+     console.log(res)
+     uploadAnexo(res.respostaCriada.id_resposta)
       //Limpa campos e atualiza interface (se aplicável)
       setConteudo?.(""); // só se existir o setConteudo
       // load?.((prev: boolean) => !prev); // força recarregar ticket, se você estiver usando isso
@@ -144,6 +150,30 @@ export const Mensagens = ({ onClose, mensagens, codigoTicket, id_ticket, remeten
     }
   };
 
+const uploadAnexo = async (idResposta: number) => {
+  if (arquivos.length === 0) return;
+
+  const formData = new FormData();
+  arquivos.forEach((file) => {
+    formData.append("anexos", file);
+  });
+  formData.append("idResposta", idResposta.toString());
+  formData.append("idTicket", id_ticket.toString());
+
+  try {
+    const res = await chamadasAnexo.createAnexo(formData);
+    console.log("Anexos enviados:", res);
+    setArquivos([]);
+  } catch (err) {
+    console.error("Erro ao enviar anexos:", err);
+  }
+};
+
+
+  // Função para remover um arquivo da lista
+  const removerArquivo = (index: number) => {
+    setArquivos((prev) => prev.filter((_, i) => i !== index));
+  };
 
   return (
     <div className="bg-white rounded-lg shadow-md border border-gray-300 mb-5 max-w-[1400px]">
@@ -252,17 +282,57 @@ export const Mensagens = ({ onClose, mensagens, codigoTicket, id_ticket, remeten
             rows={3}
             value={conteudo}
             onChange={(e) => setConteudo(e.target.value)}
-            onFocus={()=>setError('')}
+            onFocus={() => setError('')}
           ></textarea>
-          {error &&  <span className="text-xs text-red-700">{error}</span>}
+          {error && <span className="text-xs text-red-700">{error}</span>}
 
           <div className="flex justify-between items-center">
-            <button className="text-sm px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 transition">
-              Anexo
-            </button>
-            <button onClick={criarResposta} className="text-sm px-5 py-2 rounded-lg bg-primary text-white font-semibold hover:bg-primary/90 transition">
-              Enviar
-            </button>
+            <div className="flex gap-2">
+              <label
+                htmlFor="inputAnexo"
+                className="text-sm px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 transition cursor-pointer"
+              >
+                Anexar arquivos
+              </label>
+
+              <input
+                id="inputAnexo"
+                type="file"
+                multiple
+                className="hidden"
+                onChange={(e) => {
+                  const files = e.target.files ? Array.from(e.target.files) : [];
+                  if (files.length > 0) {
+                    setArquivos((prev) => [...prev, ...files]); // adiciona sem substituir
+                    console.log("Arquivos selecionados:", files);
+                  }
+                }}
+              />
+              {arquivos.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {arquivos.map((file, i) => (
+                    <div
+                      key={i}
+                      className="flex items-center gap-1 bg-gray-100 border px-2 py-1 rounded text-xs"
+                    >
+                      <span className="truncate max-w-[150px]">{file.name}</span>
+                      <button
+                        onClick={() => removerArquivo(i)}
+                        className="text-red-600 hover:text-red-800"
+                        title="Remover arquivo"
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div>
+              <button onClick={criarResposta} className="text-sm px-5 py-2 rounded-lg bg-primary text-white font-semibold hover:bg-primary/90 transition">
+                Enviar
+              </button>
+            </div>
           </div>
         </div>
       </div>

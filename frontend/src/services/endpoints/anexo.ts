@@ -14,4 +14,15 @@ export const chamadasAnexo = {
        
         return response
     },
+
+    createAnexo: async ( dadosAnexo: any) : Promise<any> =>{
+        console.log(dadosAnexo)
+        const response = await api.post<Anexo>(`/anexo/createAnexo`,  dadosAnexo, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  })
+       
+        return response
+    },
 }

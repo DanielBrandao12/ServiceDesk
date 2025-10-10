@@ -3,8 +3,13 @@ import api from "../api";
 import type { Resposta } from "../types";
 
 export const chamadasRespostas = {
-    criarResposta: async (dadosResposta: Omit<Resposta, "id_Resposta" | "data_hora">): Promise<Resposta> => {
-        const response = await api.post<Resposta>("/respostas/createResposta", dadosResposta)
+    criarResposta: async (dadosResposta: FormData,): Promise<Resposta | any> => {
+        console.log(dadosResposta)
+        const response = await api.post<Resposta>("/respostas/createResposta", dadosResposta, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  })
         return response.data
     },
 

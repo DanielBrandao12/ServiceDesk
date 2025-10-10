@@ -44,6 +44,7 @@ export interface Status {
 }
 
 export interface Resposta {
+    respostaCriada: any;
     id_resposta: number;
     data_hora: string;
     conteudo: string;
@@ -52,6 +53,7 @@ export interface Resposta {
     codigoTicket: string;
     remetente: string
     lida: boolean;
+    anexoData: any;
 }
 
 export interface RespostaView extends Resposta {

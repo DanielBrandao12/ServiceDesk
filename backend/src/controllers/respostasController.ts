@@ -94,6 +94,17 @@ export const createResposta = async (
 ): Promise<Response | any> => {
   try {
     const { id_ticket, id_usuario, conteudo, codigoTicket, remetente } = req.body;
+    const anexos = req.files as Express.Multer.File[];
+      
+    if (!anexos ) {
+      return res.status(400).json({ mensagem: "Nenhum arquivo recebido." });
+    }
+
+    const dadosAnexo = anexos.map((file) => ({
+      nome: file.originalname,
+      tipo: file.mimetype,
+      arquivo: file.buffer, // se estiver salvando em blob
+    }));
 
     const respostaCriada = await Respostas.create({
       data_hora: new Date(),
@@ -107,7 +118,7 @@ export const createResposta = async (
   return res.status(400).json({ message: "Dados obrigatórios ausentes." });
 }
 
-    enviarRespostaAutomatica(remetente, codigoTicket, conteudo);
+    enviarRespostaAutomatica(remetente, codigoTicket, conteudo, dadosAnexo);
 
     return res.status(201).json({
       message: "Resposta criada com sucesso!",

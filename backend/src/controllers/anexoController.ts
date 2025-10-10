@@ -105,3 +105,32 @@ export const createAnexo = async (idTicket: any, idResposta: number | null, dado
     throw new Error("Erro ao criar anexos");
   }
 };
+
+export const inserirAnexo = async (req: Request, res: Response) : Promise<any> => {
+  try {
+    const {  idResposta } = req.body;
+    const arquivos = req.files as Express.Multer.File[];
+
+    console.log("Recebendo anexos:", arquivos);
+
+    if (!arquivos || arquivos.length === 0) {
+      return res.status(400).json({ mensagem: "Nenhum arquivo recebido." });
+    }
+
+    const dadosAnexo = arquivos.map((file) => ({
+      nome: file.originalname,
+      tipo: file.mimetype,
+      arquivo: file.buffer, // se estiver salvando em blob
+    }));
+
+    const anexosCriados = await createAnexo(null,idResposta, dadosAnexo);
+
+    return res.status(201).json({
+      mensagem: "Anexos criados com sucesso!",
+      anexos: anexosCriados,
+    });
+  } catch (error) {
+    console.error("Erro ao inserir anexos:", error);
+    return res.status(500).json({ mensagem: "Erro ao inserir anexos." });
+  }
+};

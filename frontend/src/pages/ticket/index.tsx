@@ -199,14 +199,14 @@ const Ticket = () => {
                           <div className="flex items-center gap-2">
                             <span>Enviado por:</span>
 
-                            <span className="font-medium">
+                            <span className="font-medium text-gray-500">
                               {ticket?.respostas.at(-1)?.id_usuario
-                                ? ticket?.respostas.at(-1)?.nome_usuario
-                                : ticket?.respostas.at(-1)?.nome_requisitante}
+                                ? ticket?.respostas.at(-1)?.nome_usuario+" - Técnico "
+                                : ticket?.respostas.at(-1)?.nome_requisitante+" - Solicitante "}
                             </span>
                           </div>
                           <span className="text-xs text-gray-500">
-                            {ticket?.respostas.at(-1)?.data_hora}
+                            {formatarDataHora(ticket?.respostas.at(-1)?.data_hora)}
                           </span>
                         </div>
                         <p

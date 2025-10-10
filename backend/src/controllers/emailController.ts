@@ -5,23 +5,31 @@ import { criarChamadoPorEmail, getTicketPorCodigo } from './ticketsController';
 import { createRespostaAuto } from './respostasController';
 import { ticketCriadoTemplate } from '../services/email/templates/ticketCriado';
 import { sendEmail } from '../services/email/sendEMail';
+import { AnexosAttributes } from '../types/anexos';
+
 
 
 export const enviarRespostaAutomatica = async (
   remetente: string,
   codigoTicket: string,
-  mensagem: string
+  mensagem: string,
+  anexos?: any,
 ): Promise<void> => {
   try {
     if (!process.env.EMAIL_USER) {
       throw new Error("EMAIL_USER não está definido nas variáveis de ambiente.");
     }
-
+    console.log(anexos)
     await transporter.sendMail({
       from: process.env.EMAIL_USER,
       to: remetente,
       subject: `Atualização do chamado - ${codigoTicket}`,
       html: mensagem,//criar um template para respostas
+       attachments: anexos?.map((anexo: { nome: any; arquivo: any; tipo: any; }) => ({
+        filename: anexo.nome,
+        content: anexo.arquivo,
+        contentType: anexo.tipo,
+      })),
     });
 
     console.log(`Resposta automática enviada para: ${remetente}`);
