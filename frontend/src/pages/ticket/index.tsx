@@ -8,7 +8,7 @@ import { ChamadasTickets } from "../../services/endpoints/tickets";
 
 import { chamadasAnexo } from "../../services/endpoints/anexo";
 
-import { type TicketView, type HistoricoStatus, type Anexo } from "../../services/types";
+import { type TicketView, type HistoricoStatus, type Anexo, type Anotacao } from "../../services/types";
 
 import { chamadasHistorico } from "../../services/endpoints/historicoStatus";
 import { InfoTicket } from "./componentes/infoTicket";
@@ -16,6 +16,8 @@ import { formatarDataHora } from "../../utils/dateHour";
 import { TicketPrint } from "./componentes/ticketPrint";
 import { Mensagens } from "./componentes/mensagens";
 import { downloadAnexo } from "../../utils/downloadAnexo";
+import { chamadasAnotacoes } from "../../services/endpoints/anotacao";
+import { Anotacoes } from "./componentes/anotações";
 
 const Ticket = () => {
 
@@ -24,10 +26,12 @@ const Ticket = () => {
   const { idTicket } = useParams<{ idTicket: string }>();
   const idTicketNumber = idTicket ? parseInt(idTicket, 10) : null;
   const [ticket, setTicket] = useState<TicketView>();
-  const [loadTicket, setLoadTicket] = useState<boolean>(false)
+  const [loadTicket, setLoadTicket] = useState<boolean>(false);
   const [historicoStatus, setHistoricoStatus] = useState<HistoricoStatus[]>([]);
-  const [anexos, setAnexos] = useState<Anexo[]>([])
-  const [close, setClose] = useState<boolean>(false)
+  const [anexos, setAnexos] = useState<Anexo[]>([]);
+  const [showMessage, setShowMessage] = useState<boolean>(false);
+  const [showAnotacao, setShowAntoacao] = useState<boolean>(false);
+  const [anotacoes, setAnotacoes] = useState<Anotacao[]>([]);
 
   const carregarTicket = async () => {
     try {
@@ -50,15 +54,25 @@ const Ticket = () => {
       console.error("Erro ao buscar histórico:", err);
     }
   };
+ 
+  const carregarAnotacoes = async () =>{
+    try{
+       if (!idTicketNumber) return;
+        const res = await chamadasAnotacoes.listarAnotacoes(idTicketNumber)
 
+        setAnotacoes(res);
+        console.log(res)
+        
+    }catch(err){
+      console.error("Erro ao anotações:", err);
+    }
+  }
 
   useEffect(() => {
    
-
-
   carregarTicket();
   carregarHistorico();
-
+  carregarAnotacoes();
   // Atualiza automaticamente a cada 60 segundos
   const intervalo = setInterval(() => {
     carregarTicket();
@@ -217,7 +231,7 @@ const Ticket = () => {
                         />
                       </div>
                       <div className="flex justify-end mt-4 p-4">
-                        <button onClick={() => setClose(true)} className="text-sm font-medium text-[#BD2626] hover:underline">
+                        <button onClick={() => setShowMessage(true)} className="text-sm font-medium text-[#BD2626] hover:underline">
                           Ver todas
                         </button>
                       </div>
@@ -231,22 +245,18 @@ const Ticket = () => {
                           <div className="flex items-center gap-2">
                             <span>Criado por:</span>
 
-                            <span className="font-medium">Daniel</span>
+                            <span className="font-medium">{anotacoes.at(-1)?.nome_usuario || ""}</span>
                           </div>
                           <span className="text-xs text-gray-500">
-                            02/05/2025 - 13:25
+                           {formatarDataHora(anotacoes.at(-1)?.data_hora) || ""}
                           </span>
                         </div>
-                        <p className="text-sm text-gray-700 leading-relaxed">
-                          Lorem ipsum dolor sit amet. Eos odio quos eum minus
-                          ratione sit sint eius est error nostrum est dolor
-                          aspernatur aut accusamus praesentium. Ut delectus
-                          aliquam aut atque beatae sit harum animi! Quo ducimus
-                          sequi est iusto fuga qui atque rerum et earum voluptate.
-                        </p>
+                          <p className="text-sm leading-relaxed text-gray-700" >
+                            {anotacoes.at(-1)?.descricao || ""}
+                            </p>
                       </div>
                       <div className="flex justify-end mt-4 p-4">
-                        <button onClick={() => setClose(true)} className="text-sm font-medium text-[#BD2626] hover:underline">
+                        <button onClick={() => setShowAntoacao(true)} className="text-sm font-medium text-[#BD2626] hover:underline">
                           Ver todas
                         </button>
                       </div>
@@ -298,10 +308,10 @@ const Ticket = () => {
         </div>
 
         {
-          close && (
+          showMessage && (
             <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
               <div className="flex flex-col items-center text-center gap-4">
-                <Mensagens onClose={() => setClose(false)} carregarMensagens={()=> carregarTicket()}
+                <Mensagens onClose={() => setShowMessage(false)} carregarMensagens={()=> carregarTicket()}
                   mensagens={ticket?.respostas}
                   codigoTicket={ticket?.ticket.codigo_ticket}
                   id_ticket={ticket?.ticket.id_ticket}
@@ -312,7 +322,15 @@ const Ticket = () => {
           )
         }
 
-
+      {
+        showAnotacao && (
+                  <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+              <div className="flex flex-col items-center text-center gap-4">
+                      <Anotacoes idTicket ={ticket?.ticket.id_ticket} anotacoes={anotacoes}  onShow={() => setShowAntoacao(false)} carregarAnotacoes={()=> carregarAnotacoes()}/>
+              </div>
+            </div>
+        )
+      }
 
       </div>
       {/* componente invisível só para impressão */}

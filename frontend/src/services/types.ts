@@ -96,3 +96,12 @@ export interface MensagemRetorno {
     ticket: Ticket;
     message: string;
 }
+
+export interface Anotacao {
+    id: number;
+    descricao: string;
+    data_hora: Date | any;
+    id_usuario: number;
+    id_ticket: number;
+    nome_usuario: string;
+}

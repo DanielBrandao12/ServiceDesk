@@ -1,11 +1,13 @@
 import { Router } from "express";
 
-import { createAnotacao } from "../controllers/anotacaoController";
+import { createAnotacao, getAnotacaoId } from "../controllers/anotacaoController";
 
 const router = Router();
 
 
 router.post('/createAnotacao', createAnotacao);
+
+router.get('/:id', getAnotacaoId)
 
 
 export default router

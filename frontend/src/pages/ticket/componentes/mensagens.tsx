@@ -102,7 +102,7 @@ export const Mensagens = ({ onClose, mensagens, codigoTicket, id_ticket, remeten
   const anexoData = new FormData();
 // campos da resposta
 anexoData.append("id_ticket", id_ticket.toString());
-anexoData.append("id_usuario", "1");
+anexoData.append("id_usuario", "1");//vou pegar o id do user logado
 anexoData.append("conteudo", conteudo.trim());
 anexoData.append("codigoTicket", codigoTicket);
 anexoData.append("remetente", remetente);
