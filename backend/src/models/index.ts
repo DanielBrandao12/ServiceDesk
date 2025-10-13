@@ -11,7 +11,7 @@ import initTicketsModel from "./tickets";
 import initUsuariosModel from "./usuarios";
 import initViewRespostasModel from "./viewRespostas";
 import initViewTicketModel from "./viewTickets";
-
+import initAnotacaoModel from "./anotacao";
 // 🔹 Inicialização dos models
 const Anexos = initAnexosModel(sequelize);
 const Categorias = initCategoriasModel(sequelize);
@@ -22,7 +22,7 @@ const Tickets = initTicketsModel(sequelize);
 const Usuarios = initUsuariosModel(sequelize);
 const ViewRespostas = initViewRespostasModel(sequelize);
 const ViewTickets = initViewTicketModel(sequelize);
-
+const Anotacao = initAnotacaoModel(sequelize);
 // 🔹 Definição das associações
 HistoricoStatus.belongsTo(Status, {
   foreignKey: "id_status",
@@ -56,4 +56,5 @@ export {
   Usuarios,
   ViewRespostas,
   ViewTickets,
+  Anotacao
 };

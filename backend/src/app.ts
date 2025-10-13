@@ -8,6 +8,7 @@ import usuairoRoutes from './routes/UsuarioRoute';
 import categoriaRoutes from './routes/CategoriaRoute';
 import historicoRoutes from './routes/HistoricoRoute';
 import authRoutes from './routes/LoginRoute';
+import anotacaoRoutes from './routes/AnotacaoRoute';
 //import relatorio from './routes/RelatorioRoute';
 import respostaRoutes from './routes/RespostaRoute';
 import statusRoutes from './routes/StatusRoute';
@@ -47,6 +48,7 @@ app.use('/auth', authRoutes);
 app.use('/respostas', respostaRoutes);
 app.use('/status', statusRoutes);
 app.use('/tickets', ticketRoutes);
+app.use('/anotacao', anotacaoRoutes)
 
 // Verificar e-mails periodicamente (a cada 5 minutos)
 setInterval(async () => {
