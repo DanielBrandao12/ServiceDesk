@@ -44,7 +44,7 @@ const hashPassword = async (senha: string): Promise<string> => {
 const getUserAll = async (req: Request, res: Response | any) => {
   try {
     const users = await Usuarios.findAll({
-      attributes: ['id_usuario', 'nome_completo', 'email', 'nome_usuario'],
+      attributes: ['id_usuario', 'nome_completo', 'email', 'nome_usuario', 'perfil'],
     });
 
     return res.status(200).json(users);

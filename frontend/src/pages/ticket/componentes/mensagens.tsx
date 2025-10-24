@@ -1,11 +1,13 @@
 import { Download, X } from "lucide-react";
-import type { Resposta, RespostaView } from "../../../services/types";
+import type { RespostaView } from "../../../services/types";
 import { formatarDataHora } from "../../../utils/dateHour";
 import { pegarIniciais } from "../../../utils/letraInicial";
 import { useEffect, useRef, useState } from "react";
 import { chamadasRespostas } from "../../../services/endpoints/respostas";
 import { chamadasAnexo } from "../../../services/endpoints/anexo";
 import { downloadAnexo } from "../../../utils/downloadAnexo";
+
+import { getUserData } from "../../../utils/getUser";
 
 
 interface mensagensProps {
@@ -27,6 +29,7 @@ export const Mensagens = ({ onClose, mensagens, codigoTicket, id_ticket, remeten
   const [temNaoLidasAcima, setTemNaoLidasAcima] = useState(false);
   const [error, setError] = useState<string>('');
   const [arquivos, setArquivos] = useState<File[]>([]);
+  const user: any = getUserData();
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -57,7 +60,7 @@ export const Mensagens = ({ onClose, mensagens, codigoTicket, id_ticket, remeten
     };
 
     carregarAnexos();
-  }, [mensagens]);
+  }, [mensagens, carregarMensagens]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -99,24 +102,21 @@ export const Mensagens = ({ onClose, mensagens, codigoTicket, id_ticket, remeten
         return;
       }
 
-  const anexoData = new FormData();
-// campos da resposta
-anexoData.append("id_ticket", id_ticket.toString());
-anexoData.append("id_usuario", "1");//vou pegar o id do user logado
-anexoData.append("conteudo", conteudo.trim());
-anexoData.append("codigoTicket", codigoTicket);
-anexoData.append("remetente", remetente);
+      const anexoData = new FormData();
+      // campos da resposta
+      anexoData.append("id_ticket", id_ticket.toString());
+      anexoData.append("id_usuario", user?.id);//vou pegar o id do user logado
+      anexoData.append("conteudo", conteudo.trim());
+      anexoData.append("codigoTicket", codigoTicket);
+      anexoData.append("remetente", remetente);
 
-// arquivos
-arquivos.forEach(file => {
-  anexoData.append("arquivos", file);
-});
-      console.log("Enviando resposta:", anexoData);
+      // arquivos
+      arquivos.forEach(file => {
+        anexoData.append("arquivos", file);
+      });
 
-     const res = await chamadasRespostas.criarResposta(anexoData);
-
-     console.log(res)
-     uploadAnexo(res.respostaCriada.id_resposta)
+      const res = await chamadasRespostas.criarResposta(anexoData);
+      uploadAnexo(res.respostaCriada.id_resposta)
       //Limpa campos e atualiza interface (se aplicável)
       setConteudo?.(""); // só se existir o setConteudo
       // load?.((prev: boolean) => !prev); // força recarregar ticket, se você estiver usando isso
@@ -150,24 +150,23 @@ arquivos.forEach(file => {
     }
   };
 
-const uploadAnexo = async (idResposta: number) => {
-  if (arquivos.length === 0) return;
+  const uploadAnexo = async (idResposta: number) => {
+    if (arquivos.length === 0) return;
 
-  const formData = new FormData();
-  arquivos.forEach((file) => {
-    formData.append("anexos", file);
-  });
-  formData.append("idResposta", idResposta.toString());
-  formData.append("idTicket", id_ticket.toString());
+    const formData = new FormData();
+    arquivos.forEach((file) => {
+      formData.append("anexos", file);
+    });
+    formData.append("idResposta", idResposta.toString());
+    formData.append("idTicket", id_ticket.toString());
 
-  try {
-    const res = await chamadasAnexo.createAnexo(formData);
-    console.log("Anexos enviados:", res);
-    setArquivos([]);
-  } catch (err) {
-    console.error("Erro ao enviar anexos:", err);
-  }
-};
+    try {
+      await chamadasAnexo.createAnexo(formData);
+      setArquivos([]);
+    } catch (err) {
+      console.error("Erro ao enviar anexos:", err);
+    }
+  };
 
 
   // Função para remover um arquivo da lista
@@ -203,57 +202,59 @@ const uploadAnexo = async (idResposta: number) => {
           </div>
         )}
         {/* Lista de mensagens */}
-        <div
-          ref={scrollRef} className="flex flex-col flex-1 overflow-y-auto p-8 space-y-6">
-          {mensagemComAnexo.map((mensagem, i) => (
+        {
+          mensagemComAnexo.length > 0 ? (
             <div
-              key={i}
-              data-id={mensagem.id_resposta}
-              className="flex flex-col gap-3"
-            >
-              <div className="flex justify-between items-center">
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`
+              ref={scrollRef} className="flex flex-col flex-1 overflow-y-auto p-8 space-y-6 h-52">
+              {mensagemComAnexo.map((mensagem, i) => (
+                <div
+                  key={i}
+                  data-id={mensagem.id_resposta}
+                  className="flex flex-col gap-3"
+                >
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`
                           flex items-center justify-center
                           w-7 h-7 rounded-full
                          ${mensagem.nome_usuario ? 'bg-primary text-white' : 'bg-white text-primary border border-primary'}   font-semibold
                           shadow-sm select-none
                         `}
-                    title={mensagem.id_usuario ? mensagem.nome_usuario : mensagem.nome_requisitante}
-                  >
-                    <span className="text-xs">
-                      {pegarIniciais(
-                        mensagem.id_usuario ? mensagem.nome_usuario : mensagem.nome_requisitante
-                      )}
+                        title={mensagem.id_usuario ? mensagem.nome_usuario : mensagem.nome_requisitante}
+                      >
+                        <span className="text-xs">
+                          {pegarIniciais(
+                            mensagem.id_usuario ? mensagem.nome_usuario : mensagem.nome_requisitante
+                          )}
+                        </span>
+                      </div>
+                      <span className="font-medium text-gray-700">
+                        {mensagem.id_usuario ? mensagem.nome_usuario + " - Técnico" : mensagem.nome_requisitante + " - Solicitante"}
+                      </span>
+                    </div>
+                    <span className="text-xs text-gray-400">
+                      {formatarDataHora(mensagem.data_hora)}
                     </span>
                   </div>
-                  <span className="font-medium text-gray-700">
-                    {mensagem.id_usuario ? mensagem.nome_usuario + " - Técnico" : mensagem.nome_requisitante + " - Solicitante"}
-                  </span>
-                </div>
-                <span className="text-xs text-gray-400">
-                  {formatarDataHora(mensagem.data_hora)}
-                </span>
-              </div>
 
-              <div className="flex flex-col items-start text-start p-4 bg-gray-50 border-l-2 border-primary rounded-md text-sm text-gray-700 shadow-sm ml-12">
-                <p
-                  className="leading-relaxed "
-                  dangerouslySetInnerHTML={{
-                    __html: mensagem.conteudo || "",
-                  }}
-                />
-                <div className="flex items-center gap-6  mt-6">
+                  <div className="flex flex-col items-start text-start p-4 bg-gray-50 border-l-2 border-primary rounded-md text-sm text-gray-700 shadow-sm ml-12">
+                    <p
+                      className="leading-relaxed "
+                      dangerouslySetInnerHTML={{
+                        __html: mensagem.conteudo || "",
+                      }}
+                    />
+                    <div className="flex items-center gap-6  mt-6">
 
-                  {mensagem.anexos.length > 0 ? (mensagem.anexos.map((item: any, i: any) => (
-                    <div
-                      key={i}
-                      onClick={() => (downloadAnexo(item.id, item.nome))}
-                      className="flex items-center gap-1 cursor-pointer text-gray-700 hover:text-[#BD2626]"
-                    >
-                      <span
-                        className="
+                      {mensagem.anexos.length > 0 ? (mensagem.anexos.map((item: any, i: any) => (
+                        <div
+                          key={i}
+                          onClick={() => (downloadAnexo(item.id, item.nome))}
+                          className="flex items-center gap-1 cursor-pointer text-gray-700 hover:text-[#BD2626]"
+                        >
+                          <span
+                            className="
                               text-xs
                               text-primary 
                               border-b-2 
@@ -262,17 +263,24 @@ const uploadAnexo = async (idResposta: number) => {
                               cursor-pointer 
                               transition-colors
                             "
-                      >
-                        {item.nome} {i + 1}
-                      </span>
-                      <Download size={14} className="text-primary" />
+                          >
+                            {item.nome} {i + 1}
+                          </span>
+                          <Download size={14} className="text-primary" />
+                        </div>
+                      ))) : (<span></span>)}
                     </div>
-                  ))) : (<span></span>)}
+                  </div>
                 </div>
-              </div>
+              ))}
             </div>
-          ))}
-        </div>
+          ) : (
+            <div className="flex flex-col flex-1 overflow-y-auto p-8 space-y-6 h-52">
+              <span>Não existe mensagens</span>
+            </div>
+          )
+        }
+
 
         {/* Área de envio */}
         <div className="border-t bg-gray-50 p-4 flex flex-col gap-3">

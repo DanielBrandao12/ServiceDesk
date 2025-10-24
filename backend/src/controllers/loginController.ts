@@ -54,13 +54,15 @@ export const handleLogin = async (
       nome_completo,
     };
 
-    const { senha_hash: _, ...usuarioSemSenha } = usuario.toJSON();
-    return res.status(200).json(usuarioSemSenha);
+    //const { senha_hash: _, ...usuarioSemSenha } = usuario.toJSON();
+    return res.status(200).json({token});
   } catch (error: any) {
     console.error("Erro ao fazer login:", error);
     return res.status(500).json({ message: "Erro interno ao fazer login", error: error.message });
   }
 };
+
+
 export const logout = (
   req: Request,
   res: Response

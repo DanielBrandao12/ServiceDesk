@@ -37,7 +37,6 @@ const Ticket = () => {
     try {
       if (!idTicketNumber) return;
       const res = await ChamadasTickets.listarTicket(idTicketNumber);
-      console.log("Ticket encontrado:", res);
       setTicket(res);
     } catch (err) {
       console.error("Erro ao buscar ticket:", err);
@@ -49,73 +48,66 @@ const Ticket = () => {
       if (!idTicketNumber) return;
       const res = await chamadasHistorico.getHistorico(idTicketNumber);
       setHistoricoStatus(res);
-      console.log("Histórico:", res);
     } catch (err) {
       console.error("Erro ao buscar histórico:", err);
     }
   };
- 
-  const carregarAnotacoes = async () =>{
-    try{
-       if (!idTicketNumber) return;
-        const res = await chamadasAnotacoes.listarAnotacoes(idTicketNumber)
 
-        setAnotacoes(res);
-        console.log(res)
-        
-    }catch(err){
+  const carregarAnotacoes = async () => {
+    try {
+      if (!idTicketNumber) return;
+      const res = await chamadasAnotacoes.listarAnotacoes(idTicketNumber)
+
+      setAnotacoes(res);
+  
+    } catch (err) {
       console.error("Erro ao anotações:", err);
     }
   }
 
   useEffect(() => {
-   
-  carregarTicket();
-  carregarHistorico();
-  carregarAnotacoes();
-  // Atualiza automaticamente a cada 60 segundos
-  const intervalo = setInterval(() => {
+
     carregarTicket();
-    
-  }, 60000);
+    carregarHistorico();
+    carregarAnotacoes();
+    // Atualiza automaticamente a cada 60 segundos
+    const intervalo = setInterval(() => {
+      carregarTicket();
 
-  // Limpa o intervalo ao desmontar o componente ou mudar o ticket
-  return () => clearInterval(intervalo);
+    }, 60000);
 
-}, [idTicketNumber, loadTicket]);
+    // Limpa o intervalo ao desmontar o componente ou mudar o ticket
+    return () => clearInterval(intervalo);
+
+  }, [idTicketNumber, loadTicket]);
 
 
 
   useEffect(() => {
-  if (!ticket?.ticket?.codigo_ticket) return;
+    if (!ticket?.ticket?.codigo_ticket) return;
 
-  const carregarAnexos = async () => {
-    try {
-      const res = await chamadasAnexo.listarAnexos(ticket.ticket.codigo_ticket);
-      if (Array.isArray(res)) {
-        setAnexos(res);
-        console.log("Anexos:", res);
-      } else {
-        setAnexos([]);
-        console.warn("Resposta inesperada ao listar anexos:", res);
+    const carregarAnexos = async () => {
+      try {
+        const res = await chamadasAnexo.listarAnexos(ticket.ticket.codigo_ticket);
+        if (Array.isArray(res)) {
+          setAnexos(res);
+        } else {
+          setAnexos([]);
+          console.warn("Resposta inesperada ao listar anexos:", res);
+        }
+      } catch (err) {
+        console.error("Erro ao carregar anexos:", err);
       }
-    } catch (err) {
-      console.error("Erro ao carregar anexos:", err);
-    }
-  };
+    };
 
-  carregarAnexos();
+    carregarAnexos();
   }, [ticket]);
-
-
-
 
 
   const handlePrint = useReactToPrint({
     contentRef: componentRef,
     documentTitle: `Ticket-${ticket?.ticket.codigo_ticket}`,
   });
-
 
 
   return (
@@ -133,6 +125,7 @@ const Ticket = () => {
           {/* Coluna Esquerda */}
           <div className="w-3/4 flex flex-col gap-6">
             <Card>
+
               {/* Dados do Usuário */}
               <div className="flex flex-col gap-2  p-1 text-xs text-[#4B4B4B] font-bold">
                 <span>
@@ -148,8 +141,9 @@ const Ticket = () => {
                   </span>
                 </span>
               </div>
-              <div className="flex flex-col gap-6 p-5">
+
                 {/* Conteúdo do Ticket */}
+              <div className="flex flex-col gap-6 p-5">
                 <div className="flex flex-col gap-2">
                   <h2 className="text-2xl font-bold text-black">
                     {ticket && ticket.ticket.assunto}
@@ -181,7 +175,7 @@ const Ticket = () => {
                   </div>
                 </div>
 
-                {/* Abas */}
+                {/* Abas mensgens e anotações */}
                 <div>
                   <div className="flex gap-10 border-b border-gray-300">
                     <button
@@ -206,60 +200,96 @@ const Ticket = () => {
 
                   {/* Conteúdo da Aba */}
                   {abaAtiva === "mensagens" ? (
+
                     /*Mensagens */
                     <div>
-                      <div className="mt-4 p-4 bg-white border rounded-lg shadow-sm">
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-2">
-                            <span>Enviado por:</span>
+                      {
+                        ticket?.respostas.length > 0 ? (
+                          <div>
+                            <div className="mt-4 p-4 bg-white border rounded-lg shadow-sm">
+                              <div className="flex items-center justify-between mb-2">
+                                <div className="flex items-center gap-2">
+                                  <span>Enviado por:</span>
 
-                            <span className="font-medium text-gray-500">
-                              {ticket?.respostas.at(-1)?.id_usuario
-                                ? ticket?.respostas.at(-1)?.nome_usuario+" - Técnico "
-                                : ticket?.respostas.at(-1)?.nome_requisitante+" - Solicitante "}
-                            </span>
+                                  <span className="font-medium text-gray-500">
+                                    {ticket?.respostas.at(-1)?.id_usuario
+                                      ? ticket?.respostas.at(-1)?.nome_usuario + " - Técnico "
+                                      : ticket?.respostas.at(-1)?.nome_requisitante + " - Solicitante "}
+                                  </span>
+                                </div>
+                                <span className="text-xs text-gray-500">
+                                  {formatarDataHora(ticket?.respostas.at(-1)?.data_hora)}
+                                </span>
+                              </div>
+                              <p
+                                className="text-sm leading-relaxed text-gray-700"
+                                dangerouslySetInnerHTML={{
+                                  __html: ticket?.respostas.at(-1)?.conteudo || "",
+                                }}
+                              />
+                            </div>
+                            <div className="flex justify-end mt-4 p-4">
+                              <button onClick={() => setShowMessage(true)} className="text-sm font-medium text-[#BD2626] hover:underline">
+                                Ver todas
+                              </button>
+                            </div>
                           </div>
-                          <span className="text-xs text-gray-500">
-                            {formatarDataHora(ticket?.respostas.at(-1)?.data_hora)}
-                          </span>
-                        </div>
-                        <p
-                          className="text-sm leading-relaxed text-gray-700"
-                          dangerouslySetInnerHTML={{
-                            __html: ticket?.respostas.at(-1)?.conteudo || "",
-                          }}
-                        />
-                      </div>
-                      <div className="flex justify-end mt-4 p-4">
-                        <button onClick={() => setShowMessage(true)} className="text-sm font-medium text-[#BD2626] hover:underline">
-                          Ver todas
-                        </button>
-                      </div>
+                        ) : (
+                          <div className="mt-6">
+
+                            <span>Não existe mensagens</span>
+                            <div className="flex justify-end mt-4 p-4">
+                              <button onClick={() => setShowMessage(true)} className="text-sm font-medium text-[#BD2626] hover:underline">
+                                Enviar mensagem
+                              </button>
+                            </div>
+                          </div>
+                        )
+                      }
+
                     </div>
                   ) : (
-                    /*anotações  ainda não tem tabela no banco*/
+
+                    /*Anotações */
                     <div>
+                      {
+                        anotacoes.length > 0 ? (
 
-                      <div className="mt-4 p-4 bg-white border rounded-lg shadow-sm">
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-2">
-                            <span>Criado por:</span>
+                          <div>
+                            <div className="mt-4 p-4 bg-white border rounded-lg shadow-sm">
+                              <div className="flex items-center justify-between mb-2">
+                                <div className="flex items-center gap-2">
+                                  <span>Criado por:</span>
 
-                            <span className="font-medium">{anotacoes.at(-1)?.nome_usuario || ""}</span>
+                                  <span className="font-medium">{anotacoes.at(-1)?.nome_usuario || ""}</span>
+                                </div>
+                                <span className="text-xs text-gray-500">
+                                  {formatarDataHora(anotacoes.at(-1)?.data_hora) || ""}
+                                </span>
+                              </div>
+                              <p className="text-sm leading-relaxed text-gray-700" >
+                                {anotacoes.at(-1)?.descricao || ""}
+                              </p>
+                            </div>
+                            <div className="flex justify-end mt-4 p-4">
+                              <button onClick={() => setShowAntoacao(true)} className="text-sm font-medium text-[#BD2626] hover:underline">
+                                Ver todas
+                              </button>
+                            </div>
                           </div>
-                          <span className="text-xs text-gray-500">
-                           {formatarDataHora(anotacoes.at(-1)?.data_hora) || ""}
-                          </span>
-                        </div>
-                          <p className="text-sm leading-relaxed text-gray-700" >
-                            {anotacoes.at(-1)?.descricao || ""}
-                            </p>
-                      </div>
-                      <div className="flex justify-end mt-4 p-4">
-                        <button onClick={() => setShowAntoacao(true)} className="text-sm font-medium text-[#BD2626] hover:underline">
-                          Ver todas
-                        </button>
-                      </div>
+                        ) : (
+                          <div className="mt-6">
+
+                            <span>Não existe anotações</span>
+                            <div className="flex justify-end mt-4 p-4">
+                              <button onClick={() => setShowAntoacao(true)} className="text-sm font-medium text-[#BD2626] hover:underline">
+                                Criar Anotação
+                              </button>
+                            </div>
+                          </div>)
+                      }
+
+
                     </div>
                   )}
                 </div>
@@ -269,8 +299,11 @@ const Ticket = () => {
 
           {/* Coluna Direita */}
           <div className="w-1/4 flex flex-col gap-6">
-            <InfoTicket ticket={ticket} setLoadTicket={() => setLoadTicket(!loadTicket)} handlePrint={handlePrint} />
 
+            {/*Card de informações do ticket */}
+            <InfoTicket ticket={ticket} setLoadTicket={() => setLoadTicket(!loadTicket)} handlePrint={handlePrint} />
+            
+            {/*Card do histórico da alteração de status do ticket */}
             <Card className="h-40 ">
               <div className="flex items-center  justify-between py-4 text-xl font-bold ">
                 <span>Histórico Status</span>
@@ -307,11 +340,13 @@ const Ticket = () => {
 
         </div>
 
+        
+        {/*Modal mensagens */}
         {
           showMessage && (
             <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
               <div className="flex flex-col items-center text-center gap-4">
-                <Mensagens onClose={() => setShowMessage(false)} carregarMensagens={()=> carregarTicket()}
+                <Mensagens onClose={() => setShowMessage(false)} carregarMensagens={() => carregarTicket()}
                   mensagens={ticket?.respostas}
                   codigoTicket={ticket?.ticket.codigo_ticket}
                   id_ticket={ticket?.ticket.id_ticket}
@@ -322,17 +357,20 @@ const Ticket = () => {
           )
         }
 
-      {
-        showAnotacao && (
-                  <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+
+         {/*Modal anotações */}
+        {
+          showAnotacao && (
+            <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
               <div className="flex flex-col items-center text-center gap-4">
-                      <Anotacoes idTicket ={ticket?.ticket.id_ticket} anotacoes={anotacoes}  onShow={() => setShowAntoacao(false)} carregarAnotacoes={()=> carregarAnotacoes()}/>
+                <Anotacoes idTicket={ticket?.ticket.id_ticket} anotacoes={anotacoes} onShow={() => setShowAntoacao(false)} carregarAnotacoes={() => carregarAnotacoes()} />
               </div>
             </div>
-        )
-      }
+          )
+        }
 
       </div>
+
       {/* componente invisível só para impressão */}
       <div style={{ display: "none" }}>
         <TicketPrint

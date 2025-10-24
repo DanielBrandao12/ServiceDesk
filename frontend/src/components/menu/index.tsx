@@ -85,7 +85,7 @@ const Menu = ({ expandeMenu }: MenuProps) => {
           >
             <Shapes className="text-white" size={25} />
             {expandeMenu && (
-              <Link className="hidden sm:inline text-white" to={"/"}>
+              <Link className="hidden sm:inline text-white" to={"/Categorias"}>
                 Categorias
               </Link>
             )}
@@ -96,7 +96,7 @@ const Menu = ({ expandeMenu }: MenuProps) => {
           >
             <ChartPie className="text-white" size={25} />
             {expandeMenu && (
-              <Link className="hidden sm:inline text-white" to={"/"}>
+              <Link className="hidden sm:inline text-white" to={"/Status"}>
                 Status
               </Link>
             )}
@@ -107,7 +107,7 @@ const Menu = ({ expandeMenu }: MenuProps) => {
           >
             <UsersRound className="text-white" size={25} />
             {expandeMenu && (
-              <Link className="hidden sm:inline text-white" to={"/"}>
+              <Link className="hidden sm:inline text-white" to={"/Usuarios"}>
                 Usuários
               </Link>
             )}

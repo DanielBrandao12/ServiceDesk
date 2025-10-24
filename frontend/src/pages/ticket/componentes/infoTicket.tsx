@@ -73,7 +73,6 @@ export const InfoTicket: React.FC<TicketProps> = ({
         (item) => ticket?.ticket.id_categoria === item.id_categoria
       );
       setCategoria(categoriaEncontrada);
-      console.log(categoriaEncontrada);
     });
 
     chamadasStatus.listarStatus().then((res) => {

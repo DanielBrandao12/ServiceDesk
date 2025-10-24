@@ -4,6 +4,7 @@ import { pegarIniciais } from "../../../utils/letraInicial";
 import { formatarDataHora } from "../../../utils/dateHour";
 import { chamadasAnotacoes } from "../../../services/endpoints/anotacao";
 import { useState } from "react";
+import { getUserData } from "../../../utils/getUser";
 
 
 
@@ -16,9 +17,9 @@ interface anotacoesProps {
 
 export const Anotacoes = ({ onShow, carregarAnotacoes, anotacoes, idTicket }: anotacoesProps) => {
 
-    const [desc, setDesc] = useState<string>('')
-    const [errorMessage, setErrorMessage] = useState<string>('')
-
+    const [desc, setDesc] = useState<string>('');
+    const [errorMessage, setErrorMessage] = useState<string>('');
+    const user : any = getUserData();
     const criarAnotacao = async () => {
         try {
             if (!idTicket || !desc?.trim()) {
@@ -26,15 +27,13 @@ export const Anotacoes = ({ onShow, carregarAnotacoes, anotacoes, idTicket }: an
                 return;
             }
 
-
-
             const dados = {
                 id_ticket: idTicket,
-                id_usuario: 1,
+                id_usuario: user?.id,
                 descricao: desc,
             };
 
-            const res = await chamadasAnotacoes.criarAnotacao(dados);
+            await chamadasAnotacoes.criarAnotacao(dados);
 
             setDesc(""); // limpa o campo
             // atualiza a lista de anotações, se tiver
@@ -61,37 +60,43 @@ export const Anotacoes = ({ onShow, carregarAnotacoes, anotacoes, idTicket }: an
 
                     <button onClick={() => onShow()} className="p-4"><X /></button>
                 </header>
-
-                <div className="flex flex-col flex-1 overflow-y-auto p-8 space-y-6">
-                    {
-                        anotacoes.map((anotacao, i) => (
-                            <div className="flex flex-col gap-3">
-                                <div className="flex justify-between items-center">
-                                    <div
-                                        key={i}
-                                        className="flex items-center gap-3">
-                                        <div
-                                            className={`flex items-center justify-center w-7 h-7 rounded-full bg-primary text-white font-semibold shadow-sm select-none`} >
-                                            <span className="text-xs">
-                                                {pegarIniciais(anotacao.nome_usuario)}
+                {
+                    anotacoes.length > 0 ? (
+                        <div className="flex flex-col flex-1 overflow-y-auto p-8 space-y-6">
+                            {
+                                anotacoes.map((anotacao, i) => (
+                                    <div className="flex flex-col gap-3">
+                                        <div className="flex justify-between items-center">
+                                            <div
+                                                key={i}
+                                                className="flex items-center gap-3">
+                                                <div
+                                                    className={`flex items-center justify-center w-7 h-7 rounded-full bg-primary text-white font-semibold shadow-sm select-none`} >
+                                                    <span className="text-xs">
+                                                        {pegarIniciais(anotacao.nome_usuario)}
+                                                    </span>
+                                                </div>
+                                                <span className="font-medium text-gray-700">
+                                                    {anotacao.nome_usuario}
+                                                </span>
+                                            </div>
+                                            <span className="text-xs text-gray-400">
+                                                {formatarDataHora(anotacao.data_hora)}
                                             </span>
                                         </div>
-                                        <span className="font-medium text-gray-700">
-                                            {anotacao.nome_usuario}
-                                        </span>
+                                        <div className="flex flex-col items-start text-start p-4 bg-gray-50 border-l-2 border-primary rounded-md text-sm text-gray-700 shadow-sm ml-12">
+                                            {anotacao.descricao}
+                                        </div>
                                     </div>
-                                    <span className="text-xs text-gray-400">
-                                        {formatarDataHora(anotacao.data_hora)}
-                                    </span>
-                                </div>
-                                <div className="flex flex-col items-start text-start p-4 bg-gray-50 border-l-2 border-primary rounded-md text-sm text-gray-700 shadow-sm ml-12">
-                                    {anotacao.descricao}
-                                </div>
-                            </div>
-                        ))
-                    }
+                                ))
+                            }
 
-                </div>
+                        </div>
+                    ) : (<div className="flex flex-col flex-1 overflow-y-auto p-8 space-y-6 h-52">
+                        <span>Não existe anotações</span>
+                    </div>)
+                }
+
                 <div className="border-t bg-gray-50 p-4 flex flex-col gap-3">
                     <textarea
                         className="w-full border rounded-lg p-3 resize-none focus:ring-2 focus:ring-primary focus:outline-none text-sm"
@@ -113,13 +118,6 @@ export const Anotacoes = ({ onShow, carregarAnotacoes, anotacoes, idTicket }: an
                         </div>
                     </div>
                 </div>
-
-
-
-
-
-
-
             </div>
         </div>
     )

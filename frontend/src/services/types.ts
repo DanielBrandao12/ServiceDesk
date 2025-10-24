@@ -25,6 +25,9 @@ export interface TicketView extends Ticket{
 
 export interface Usuarios {
     nomeUser: any;
+    token: string;
+  
+   
     id_usuario: number;
     nome_completo: string;
     email: string;
@@ -78,8 +81,8 @@ export interface Categoria {
     id_categoria: number;
     nome: string;
     criado_por: string;
-    status: string;
-    data_criação: string;
+    ativo: boolean;
+    data_criacao: string;
 }
 
 export interface HistoricoStatus {

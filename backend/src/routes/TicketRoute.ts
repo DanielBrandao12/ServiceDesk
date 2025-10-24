@@ -1,6 +1,6 @@
 import { Router } from 'express';
 
-import { createTickets, updateTicket, getTickets, getTicketsId, deleteTicket } from '../controllers/ticketsController';
+import { createTickets, updateTicket, getTickets, getTicketsId, deleteTicket, getTicketsClose, getDashboardData } from '../controllers/ticketsController';
 import { checkEmails } from '../controllers/emailController';
 
 const router = Router();
@@ -19,6 +19,8 @@ router.get('/verificar-emails', async (req, res) => {
 router.post('/createTicket', createTickets);
 router.put('/updateTicket/:id', updateTicket);
 router.get('/', getTickets);
+router.get('/dashboard', getDashboardData);
+router.get('/closes', getTicketsClose);
 router.get('/:id', getTicketsId);
 router.delete('/delete/:id', deleteTicket);
 
