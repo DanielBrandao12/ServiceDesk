@@ -8,6 +8,7 @@ import { Login } from "./pages/login";
 import {  StatusView } from "./pages/status";
 import { CategoriaView } from "./pages/categoria";
 import { UserView } from "./pages/user";
+import { Relatorio } from "./pages/relatorio";
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
         <Route path="/Status" element={<StatusView />} />
         <Route path="/Categorias" element={<CategoriaView />} />
         <Route path="/Usuarios" element={<UserView />} />
+        <Route path="/Relatorio" element={<Relatorio />} />
       </Routes>
     </>
   );

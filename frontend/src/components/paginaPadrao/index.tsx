@@ -9,9 +9,9 @@ const PaginaPadrao = ({ children } : any) => {
 
   return (
     <div>
-      <Header onExpandeMenu={() => setExpandeMenu(!expandeMenu)} />
+      <Header onExpandeMenu={() => setExpandeMenu(!expandeMenu)} expandeMenu={expandeMenu}/>
       <div className="flex flex-row">
-        <Menu expandeMenu={expandeMenu} />
+        <Menu expandeMenu={expandeMenu} setExpandeMenu={() => setExpandeMenu(!expandeMenu)}/>
         <Painel>{children}</Painel>
       </div>
     </div>

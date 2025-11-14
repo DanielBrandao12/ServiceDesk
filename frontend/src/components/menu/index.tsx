@@ -14,11 +14,12 @@ import { Link } from "react-router-dom";
 
 interface MenuProps {
   expandeMenu: boolean;
+  setExpandeMenu: () => void;
 }
 
-const Menu = ({ expandeMenu }: MenuProps) => {
+const Menu = ({ expandeMenu, setExpandeMenu }: MenuProps) => {
   const [submenuAberto, setSubmenuAberto] = useState(false);
-
+  
   const toggleSubmenu = () => {
     setSubmenuAberto(!submenuAberto);
   };
@@ -29,9 +30,9 @@ const Menu = ({ expandeMenu }: MenuProps) => {
         <div className="flex flex-col justify-center items-center gap-6">
           {/* Dashboard */}
           <div
-            className={`${expandeMenu ? "justify-start" : "justify-center"} flex flex-row items-center gap-2 w-4/6 cursor-pointer`}
+            className={`${expandeMenu ? "justify-start" : "justify-center"} flex flex-row items-center gap-2 w-4/6 cursor-pointer`} title="DashBoard" 
           >
-            <LayoutDashboard className="text-white" size={25} />
+            <LayoutDashboard className="text-white" size={25}  onClick={setExpandeMenu}/>
             {expandeMenu && (
               <Link className="hidden sm:inline text-white" to={"/"}>
                 Dashboard
@@ -43,8 +44,9 @@ const Menu = ({ expandeMenu }: MenuProps) => {
           <div
             onClick={toggleSubmenu}
             className={`${expandeMenu ? "justify-start" : "justify-center"} flex flex-row items-center gap-2 w-4/6 cursor-pointer`}
+            title="Tickets"
           >
-            <Ticket className="text-white" size={25} />
+            <Ticket className="text-white" size={25}  onClick={setExpandeMenu}/>
             {expandeMenu && (
               <span className="hidden sm:inline text-white">Tickets</span>
             )}
@@ -71,10 +73,11 @@ const Menu = ({ expandeMenu }: MenuProps) => {
           {/* Outros itens */}
           <div
             className={`${expandeMenu ? "justify-start" : "justify-center"} flex flex-row items-center gap-2 w-4/6 cursor-pointer`}
+            title="Relatórios"
           >
-            <FileText className="text-white" size={25} />
+            <FileText className="text-white" size={25}  onClick={setExpandeMenu}/>
             {expandeMenu && (
-              <Link className="hidden sm:inline text-white" to={"/"}>
+              <Link className="hidden sm:inline text-white" to={"/Relatorio"}>
                 Relatórios
               </Link>
             )}
@@ -82,8 +85,9 @@ const Menu = ({ expandeMenu }: MenuProps) => {
 
           <div
             className={`${expandeMenu ? "justify-start" : "justify-center"} flex flex-row items-center gap-2 w-4/6 cursor-pointer`}
+            title="Categorias"
           >
-            <Shapes className="text-white" size={25} />
+            <Shapes className="text-white" size={25}  onClick={setExpandeMenu}/>
             {expandeMenu && (
               <Link className="hidden sm:inline text-white" to={"/Categorias"}>
                 Categorias
@@ -93,8 +97,9 @@ const Menu = ({ expandeMenu }: MenuProps) => {
 
           <div
             className={`${expandeMenu ? "justify-start" : "justify-center"} flex flex-row items-center gap-2 w-4/6 cursor-pointer`}
+            title="Status"
           >
-            <ChartPie className="text-white" size={25} />
+            <ChartPie className="text-white" size={25}  onClick={setExpandeMenu}/>
             {expandeMenu && (
               <Link className="hidden sm:inline text-white" to={"/Status"}>
                 Status
@@ -104,8 +109,9 @@ const Menu = ({ expandeMenu }: MenuProps) => {
 
           <div
             className={`${expandeMenu ? "justify-start" : "justify-center"} flex flex-row items-center gap-2 w-4/6 cursor-pointer`}
+            title="Usuários"
           >
-            <UsersRound className="text-white" size={25} />
+            <UsersRound className="text-white" size={25}  onClick={setExpandeMenu}/>
             {expandeMenu && (
               <Link className="hidden sm:inline text-white" to={"/Usuarios"}>
                 Usuários
@@ -115,8 +121,9 @@ const Menu = ({ expandeMenu }: MenuProps) => {
 
           <div
             className={`${expandeMenu ? "justify-start" : "justify-center"} flex flex-row items-center gap-2 w-4/6 cursor-pointer`}
+            title="Configurações"
           >
-            <Settings className="text-white" size={25} />
+            <Settings className="text-white" size={25}  onClick={setExpandeMenu}/>
             {expandeMenu && (
               <Link className="hidden sm:inline text-white" to={"/"}>
                 Configurações

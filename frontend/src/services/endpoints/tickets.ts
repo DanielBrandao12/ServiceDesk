@@ -16,8 +16,13 @@ export const ChamadasTickets = {
     const response = await api.get<TicketView>(`/tickets/${id}`);
     return response.data;
   },
+  
+  listarDashBoard: async (periodo: string | any): Promise<any> => {
+    const response = await api.get<any | null>(`/tickets/dashboard/${periodo}`);
+    return response.data;
+  },
 
-  criarTicket: async (dadosTicket: Omit<Ticket, "id_ticket" | "codigo_ticket" | "data_criacao">): Promise<TicketView> => {
+  criarTicket: async (dadosTicket: Omit<Ticket, "id_ticket" | "codigo_ticket" | "data_criacao" | "ticket">): Promise<TicketView> => {
     const response = await api.post<TicketView>("/tickets/createTicket", dadosTicket)
     return response.data
   },

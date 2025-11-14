@@ -215,19 +215,20 @@ const salvarEdicao = async () => {
             <span className="font-semibold">Status:</span>
             <select
               className="w-40 border rounded px-2 py-1 text-xs truncate"
-              value={status[0]?.id_status}
+              value={idStatus}
               onChange={(e) => setIdStatus(Number(e.target.value))}
             >
               {statusList &&
-                statusList.map((item) => (
+                statusList.map((item, index) => (
                   <option
-                    key={item.id_status}
+                    key={index}
+                    value={item.id_status}
                     className={
                       item.id_status === ticket?.ticket.id_status
                         ? "text-green-600"
                         : ""
                     }
-                    value={item.id_status}
+                    
                     title={item.nome}
                   >
                     {item.nome}
@@ -241,7 +242,7 @@ const salvarEdicao = async () => {
             <span className="font-semibold">Categoria:</span>
             <select
               className="w-40 border rounded px-2 py-1 text-xs truncate"
-              value={categoria[0]?.id_categoria}
+              value={idCategoria}
               onChange={(e) => setIdCategoria(Number(e.target.value))}
             >
               {categorias &&
@@ -272,7 +273,8 @@ const salvarEdicao = async () => {
             >
               {
                 listPrioridade.map((item, index)=>(
-                    <option  key={index} value={item}  className={
+                    <option  key={index} value={item} 
+                     className={
                       item === ticket?.ticket.prioridade
                         ? "text-green-600"
                         : ""
@@ -289,7 +291,7 @@ const salvarEdicao = async () => {
             <span className="font-semibold">Técnico:</span>
             <select
               className="w-40 border rounded px-2 py-1 text-xs truncate"
-              value={tecnico[0]?.id_usuario}
+              value={idTecnico}
               onChange={(e) => setIdTecnico(Number(e.target.value))}
             >
               {usuarios &&

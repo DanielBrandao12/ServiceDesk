@@ -27,8 +27,7 @@ export const UserView = () => {
         try {
             const res = await chamadasUsers.listarUsuarios();
             setListUsers(res);
-            console.log(user)
-            console.log(res);
+           
         } catch (err) {
             console.error("Erro ao buscar lista de usuários", err);
         }

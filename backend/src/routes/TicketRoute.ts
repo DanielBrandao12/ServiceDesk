@@ -19,7 +19,7 @@ router.get('/verificar-emails', async (req, res) => {
 router.post('/createTicket', createTickets);
 router.put('/updateTicket/:id', updateTicket);
 router.get('/', getTickets);
-router.get('/dashboard', getDashboardData);
+router.get('/dashboard/:periodo', getDashboardData);
 router.get('/closes', getTicketsClose);
 router.get('/:id', getTicketsId);
 router.delete('/delete/:id', deleteTicket);

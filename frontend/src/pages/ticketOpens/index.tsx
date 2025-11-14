@@ -22,7 +22,7 @@ const TicketsOpen = () => {
   const [tickets, setTickets] = useState<TicketView[]>([]);
   const [filteredTickets, setFilteredTickets] = useState<TicketView[]>([]);
   const [showFilter, setShowFilter] = useState<boolean>(true);
-  const [ordenacao, setOrdenacao] = useState<string>("");
+  const [ordenacao, setOrdenacao] = useState<string>("mais_novo");
   const [busca, setBusca] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [itemPage, setItemPage] = useState<number>(5);
@@ -33,52 +33,64 @@ const TicketsOpen = () => {
 
   const navigate = useNavigate()
 
-  useEffect(() => {
-    // Buscar tickets
-    ChamadasTickets.listarTickets()
-      .then((res) => {
-        // Para cada ticket, buscar o usuário atribuído (se houver)
-        Promise.all(
-          res.map(async (ticket) => {
-            try {
-              if (ticket.atribuido_a) {
-                const user = await chamadasUsers.listarUsuario(
-                  parseInt(ticket.atribuido_a)
-                );
+ useEffect(() => {
+  const carregarTickets = async () => {
+    try {
+      const res = await ChamadasTickets.listarTickets();
 
-                return {
-                  ...ticket,
-                  nome_usuarioAtribuido:
-                    user?.nomeUser?.nome_usuario ?? "Não atribuído",
-                };
-              } else {
-                return {
-                  ...ticket,
-                  nome_usuarioAtribuido: "Não atribuído",
-                };
-              }
-            } catch (error) {
-              console.error("Erro ao buscar usuário:", error);
+      const ticketsComUsuarios = await Promise.all(
+        res.map(async (ticket) => {
+          try {
+            if (ticket.atribuido_a) {
+              const user = await chamadasUsers.listarUsuario(
+                parseInt(ticket.atribuido_a)
+              );
+
               return {
                 ...ticket,
-                nome_usuarioAtribuido: "Erro ao carregar",
+                nome_usuarioAtribuido:
+                  user?.nomeUser?.nome_usuario ?? "Não atribuído",
               };
             }
-          })
-        ).then((ticketsComUsuarios) => {
-          // Garantir que todos os tickets retornados são válidos
-          const validTickets = ticketsComUsuarios.filter(
-            (ticket): ticket is TicketView =>
-              ticket !== undefined && ticket !== null
-          );
-          console.log(validTickets);
-          setTickets(validTickets);
-        });
-      })
-      .catch((err) => {
-        console.error("Erro ao buscar tickets:", err);
-      });
-  }, []);
+
+            return {
+              ...ticket,
+              nome_usuarioAtribuido: "Não atribuído",
+            };
+          } catch (error) {
+            console.error("Erro ao buscar usuário:", error);
+
+            return {
+              ...ticket,
+              nome_usuarioAtribuido: "Erro ao carregar",
+            };
+          }
+        })
+      );
+
+      const validTickets = ticketsComUsuarios.filter(
+        (ticket): ticket is TicketView =>
+          ticket !== undefined && ticket !== null
+      );
+
+      setTickets(validTickets);
+    } catch (err) {
+      console.error("Erro ao buscar tickets:", err);
+    }
+  };
+
+  // Chamada inicial
+  carregarTickets();
+
+  // Intervalo de 30 segundos
+  const interval = setInterval(() => {
+    carregarTickets();
+  }, 30000);
+
+  // Cleanup ao desmontar
+  return () => clearInterval(interval);
+}, []);
+
 
   const selectQtde = (qtde: number) => {
     setItemPage(qtde);

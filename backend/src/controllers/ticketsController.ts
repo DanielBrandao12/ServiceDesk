@@ -364,11 +364,12 @@ export const getTicketPorCodigo = async (codigoTicket: string) => {
 };
 
 export const getDashboardData = async (req: Request, res: Response): Promise<Response | any> => {
-  console.log("aqui" + req.body)
-  try {
-    console.log("Testando aqui")
-    const { periodo } = req.body; // ex: 'Hoje', 'Esta semana', etc.
+ 
 
+  try {
+   
+    const { periodo } = req.params; // ex: 'Hoje', 'Esta semana', etc.
+   
     // === Calcula o intervalo de datas ===
     const agora = new Date();
     let dataInicio: Date;
@@ -416,7 +417,7 @@ export const getDashboardData = async (req: Request, res: Response): Promise<Res
     const atribuidos = tickets.filter((t) => t.atribuido_a === null).length;
     const emAtendimento = tickets.filter((t) => t.status === "Em Atendimento").length;
     const aguardando = tickets.filter((t) => t.status === "Aguardando Atendimento").length;
-    const aguardandoClassificao = tickets.filter((t) => t.categorias === null).length;
+    const aguardandoClassificacao = tickets.filter((t) => t.categorias === null).length;
     const pendenteResposta = tickets.filter((t) => t.categorias === "Pendente Resposta do Solicitante").length;
 
     // === Agrupamento por categoria ===
@@ -446,7 +447,7 @@ export const getDashboardData = async (req: Request, res: Response): Promise<Res
         aguardando,
         naoAtribuido,
         atribuidos,
-        aguardandoClassificao,
+        aguardandoClassificacao,
         pendenteResposta
       },
       categorias: categoriasTop8,

@@ -16,6 +16,7 @@ export interface Ticket {
 }
 
 export interface TicketView extends Ticket{
+    ticketCriado: any;
     ticket: any;
     respostas: any;
     nome_usuarioAtribuido: string;
