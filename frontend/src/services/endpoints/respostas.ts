@@ -25,8 +25,8 @@ export const chamadasRespostas = {
         return response.data
     },
 
-    listarRespostaId: async () : Promise<Resposta[]> => {
-        const response = await api.get<Resposta[]>(`/respostas/getNãoLidas`)
+    listarRespostaNaoLidas: async () : Promise<Resposta[]> => {
+        const response = await api.get<Resposta[]>(`/respostas/getNaoLidas`)
         return response.data
     },
 
