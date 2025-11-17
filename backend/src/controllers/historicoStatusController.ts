@@ -45,7 +45,7 @@ export const deleteHistorico = async (idTicket: number): Promise<{ success: bool
   }
 };
 
-export const getHistorico = async (req: Request, res: Response): Promise<Response> => {
+export const getHistorico = async (req: Request, res: Response): Promise<Response | any> => {
   const { id } = req.params;
 
   try {

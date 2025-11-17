@@ -9,21 +9,22 @@ import {  StatusView } from "./pages/status";
 import { CategoriaView } from "./pages/categoria";
 import { UserView } from "./pages/user";
 import { Relatorio } from "./pages/relatorio";
+import PrivateRoute from "./components/privateRoute";
 
 function App() {
   return (
     <>
       <Routes>
         <Route path="/Login" element={<Login/>}/>
-        <Route path="/" element={<Home />} />
-        <Route path="/TicketsOpen" element={<TicketsOpen />} />
-        <Route path="/TicketsClose" element={<TicketsClose />} />
-        <Route path="/NewTicket" element={<NewTicket />} />
-        <Route path="/Ticket/:idTicket" element={<Ticket />} />
-        <Route path="/Status" element={<StatusView />} />
-        <Route path="/Categorias" element={<CategoriaView />} />
-        <Route path="/Usuarios" element={<UserView />} />
-        <Route path="/Relatorio" element={<Relatorio />} />
+        <Route path="/"element={<PrivateRoute  element={ <Home />}/>} />
+        <Route path="/TicketsOpen" element={<PrivateRoute element={ <TicketsOpen />}/>} />
+        <Route path="/TicketsClose" element={<PrivateRoute element={<TicketsClose />}/>} />
+        <Route path="/NewTicket" element={<PrivateRoute element={<NewTicket />}/>} />
+        <Route path="/Ticket/:idTicket" element={<PrivateRoute element={<Ticket />}/>} />
+        <Route path="/Status" element={<PrivateRoute element={<StatusView />}/>} />
+        <Route path="/Categorias" element={<PrivateRoute element={<CategoriaView />}/>} />
+        <Route path="/Usuarios" element={<PrivateRoute element={<UserView />}/>} />
+        <Route path="/Relatorio" element={<PrivateRoute element={<Relatorio />}/>} />
       </Routes>
     </>
   );

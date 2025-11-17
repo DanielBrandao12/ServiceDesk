@@ -6,10 +6,10 @@ import { upload } from '../middlewares/upload';
 
 const router = Router();
 
-router.post('/createResposta',upload.array("arquivos"), createResposta)
+router.post('/createResposta',notLoggedMiddleware, upload.array("arquivos"), createResposta)
 router.get('/getRespostas',notLoggedMiddleware, getResposta)
-router.put('/updateResposta', marcarComoLida )
-router.get('/getNaoLidas', getRespostasNaoLidas)
+router.put('/updateResposta',notLoggedMiddleware, marcarComoLida )
+router.get('/getNaoLidas',notLoggedMiddleware, getRespostasNaoLidas)
 
 
 export default router;
