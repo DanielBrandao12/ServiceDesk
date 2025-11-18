@@ -11,5 +11,10 @@ export const chamadaLogin = {
     validate: async ( ) : Promise<Usuarios> =>{
          const response = await api.get<any>("/auth/validate", )
         return response.data
-    }
+    },
+
+    handleLogout: async ( ) : Promise<any> =>{
+         const response = await api.get<Usuarios>("/auth/logout")
+        return response.data
+    },
 }

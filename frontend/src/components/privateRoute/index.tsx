@@ -13,8 +13,8 @@ const PrivateRoute: React.FC<PrivateRouteProps> = ({ element }) => {
   useEffect(() => {
     const verify = async () => {
       try {
-       const teste = await chamadaLogin.validate( );
-       console.log(teste)
+       await chamadaLogin.validate( );
+      
         setAuth(true);
       } catch {
         setAuth(false);
