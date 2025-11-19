@@ -222,8 +222,8 @@ export const Relatorio = () => {
                                             .slice(indexInicio, indexFim) // 👈 aplica o corte para a página atual
                                             .map(([tipo, tickets]: [string, any[]], index) => {
                                                 const emAtendimento = tickets.filter(t => t.status === "Em atendimento").length;
-                                                const aguardando = tickets.filter(t => t.status === "Aguardando atendimento").length;
-                                                const pendenteResposta = tickets.filter(t => t.status === "Pendente Resposta do Solcicitante").length;
+                                                const aguardando = tickets.filter(t => t.status === "Aguardando Atendimento").length;
+                                                const pendenteResposta = tickets.filter(t => t.status === "Pendente Resposta do Solicitante").length;
                                                 const suspenso = tickets.filter(t => t.status === "Suspenso").length;
                                                 const fechado = tickets.filter(t => t.status === "Fechado").length;
                                                 const total = tickets.length;

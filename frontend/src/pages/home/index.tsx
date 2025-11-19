@@ -60,7 +60,7 @@ const Home = () => {
         carregando ? (<p className="text-lg font-medium">Carregando dados do dashboard...</p>) :
           (
 
-            <div className="flex flex-col m-10 gap-6 p-4 w-full">
+            <div className="flex flex-col m-10 gap-6 p-4 w-full overflow-scroll">
               {/* ====== CABEÇALHO ====== */}
               <div className="flex flex-row justify-between items-center">
                 <h1 className="text-2xl font-semibold text-gray-800">Visão Geral de Hoje</h1>
@@ -100,7 +100,7 @@ const Home = () => {
                 <h2 className="text-lg font-semibold text-gray-800 mb-4 px-2">
                   Categorias com Mais Chamados
                 </h2>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
 
                   {categorias.length > 0 ? (categorias.map(([nome, quantidade], index) => (
                     <div

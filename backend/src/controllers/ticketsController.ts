@@ -258,7 +258,7 @@ export const deleteTicket = async (req: Request, res: Response): Promise<Respons
     }
 
     // Buscar respostas relacionadas
-    const respostas = await getRespostaId(id_ticket)
+    const respostas = await getRespostaId(id_ticket )
 
     const idsRespostas = respostas.map((res) => res.id_resposta);
 

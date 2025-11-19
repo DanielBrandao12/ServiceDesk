@@ -24,7 +24,7 @@ export const getViewRespostaId = async (id_ticket: number): Promise<ViewResposta
     const respostas = await ViewRespostas.findAll({
       where: { id_ticket },
     });
-
+    
     return respostas;
   } catch (error) {
     console.error("Erro ao buscar respostas:", error);
