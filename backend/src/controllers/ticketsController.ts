@@ -194,7 +194,7 @@ export const getTicketsClose = async (req: Request, res: Response) => {
       return acc;
     }, {});
 
-    // 4️⃣ Junta tickets + respostas
+    //  Junta tickets + respostas
     const resultado = tickets.map((ticket) => ({
       ...ticket,
       respostas: respostasPorTicket[ticket.id_ticket] || [],
@@ -352,7 +352,7 @@ export const criarChamadoPorEmail = async (emailData: any) => {
       ticketData.id_usuario
     );
     if (Array.isArray(anexos) && anexos.length > 0) {
-      console.log(ticketCriado.codigo_ticket);
+      console.log(ticketCriado.codigo_ticket );
       await createAnexo(ticketCriado.codigo_ticket, null, anexos);
     }
     return {

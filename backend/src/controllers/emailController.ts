@@ -87,7 +87,7 @@ export const checkEmails = async () => {
               mensagem,
               chamado.anexos
             );
-            connection.messageFlagsAdd(message.uid, ['\\Seen']);
+            connection.messageFlagsAdd(message.seq, ["\\Seen"]);
             continue;
           }
         }
@@ -106,7 +106,7 @@ export const checkEmails = async () => {
             },
           ],
         });
-        connection.messageFlagsAdd(message.uid, ['\\Seen']);
+       connection.messageFlagsAdd(message.seq, ["\\Seen"]);
       } catch (error) {
         console.error(`Erro ao processar o e-mail:`, error);
       }
@@ -130,13 +130,13 @@ const extrairCodigoTicket = (assunto: string) => {
 const  limparMensagemEmail = (html: string | undefined) => {
     if (!html) return "";
 
-  // 1️⃣ Remove <head>, <style> e <script> — só lixo técnico
+  // Remove <head>, <style> e <script> — só lixo técnico
   html = html
     .replace(/<head[\s\S]*?<\/head>/gi, "")
     .replace(/<style[\s\S]*?<\/style>/gi, "")
     .replace(/<script[\s\S]*?<\/script>/gi, "");
 
-  // 2️⃣ Define padrões que marcam o início da mensagem anterior (vários provedores)
+  // Define padrões que marcam o início da mensagem anterior (vários provedores)
   const padroes = [
     /<div id=["']?divRplyFwdMsg["']?>/i, // Outlook
     /<div class=["']?gmail_quote["']?>/i, // Gmail
@@ -151,7 +151,7 @@ const  limparMensagemEmail = (html: string | undefined) => {
     /<blockquote/i, // fallback genérico
   ];
 
-  // 3️⃣ Corta o HTML na primeira correspondência de qualquer padrão
+  // Corta o HTML na primeira correspondência de qualquer padrão
   let corte = html.length;
   for (const padrao of padroes) {
     const match = html.search(padrao);
@@ -161,7 +161,7 @@ const  limparMensagemEmail = (html: string | undefined) => {
   }
   let atual = html.slice(0, corte);
 
-  // 4️⃣ Limpa tags vazias e espaços inúteis (mantendo a estrutura visual)
+  // Limpa tags vazias e espaços inúteis (mantendo a estrutura visual)
   atual = atual
     .replace(/<div[^>]*>\s*<\/div>/gi, "") // remove divs vazias
     .replace(/<p[^>]*>\s*<\/p>/gi, "") // remove parágrafos vazios
