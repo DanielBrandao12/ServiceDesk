@@ -26,6 +26,8 @@ const TicketsClose = () => {
   const [busca, setBusca] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [itemPage, setItemPage] = useState<number>(5);
+  const [loading, setLoading] = useState(true);
+
 
   const indexInicio = (currentPage - 1) * itemPage;
   const indexFim = indexInicio + itemPage;
@@ -34,12 +36,14 @@ const TicketsClose = () => {
   const navigate = useNavigate()
 
   useEffect(() => {
+
+    setLoading(true);
     // Buscar tickets
     ChamadasTickets.listarTicketsClose()
       .then((res) => {
         // Para cada ticket, buscar o usuário atribuído (se houver)
         Promise.all(
-          res.map(async (ticket) => {
+          res.map(async (ticket: any) => {
             try {
               if (ticket.atribuido_a) {
                 const user = await chamadasUsers.listarUsuario(
@@ -71,8 +75,10 @@ const TicketsClose = () => {
             (ticket): ticket is TicketView =>
               ticket !== undefined && ticket !== null
           );
-          console.log(validTickets);
+    
           setTickets(validTickets);
+        }).finally(() => {
+          setLoading(false);
         });
       })
       .catch((err) => {
@@ -165,6 +171,9 @@ const TicketsClose = () => {
     navigate(`/Ticket/${idTicket}`)
   }
 
+
+
+
   return (
     <PaginaPadrao>
       <div className="w-[100%] flex flex-col  gap-5 p-20 overflow-scroll">
@@ -237,8 +246,8 @@ const TicketsClose = () => {
               <span
                 onClick={() => setFiltroAtivo("todos")}
                 className={`py-2 cursor-pointer ${filtroAtivo === "todos"
-                    ? "text-background border-b border-b-background"
-                    : ""
+                  ? "text-background border-b border-b-background"
+                  : ""
                   }`}
               >
                 Todos os tickets ({tickets.length})
@@ -246,8 +255,8 @@ const TicketsClose = () => {
               <span
                 onClick={() => setFiltroAtivo("hoje")}
                 className={`py-2 cursor-pointer ${filtroAtivo === "hoje"
-                    ? "text-background border-b border-b-background"
-                    : ""
+                  ? "text-background border-b border-b-background"
+                  : ""
                   }`}
               >
                 Hoje (
@@ -263,8 +272,8 @@ const TicketsClose = () => {
               <span
                 onClick={() => setFiltroAtivo("meus")}
                 className={`py-2 cursor-pointer ${filtroAtivo === "meus"
-                    ? "text-background border-b border-b-background"
-                    : ""
+                  ? "text-background border-b border-b-background"
+                  : ""
                   }`}
               >
                 Atribuidos a mim (
@@ -277,8 +286,8 @@ const TicketsClose = () => {
               <span
                 onClick={() => setFiltroAtivo("outros")}
                 className={`py-2 cursor-pointer ${filtroAtivo === "outros"
-                    ? "text-background border-b border-b-background"
-                    : ""
+                  ? "text-background border-b border-b-background"
+                  : ""
                   }`}
               >
                 Atribuidos a outros (
@@ -294,8 +303,8 @@ const TicketsClose = () => {
               <span
                 onClick={() => setFiltroAtivo("nao_atribuidos")}
                 className={`py-2 cursor-pointer ${filtroAtivo === "nao_atribuidos"
-                    ? "text-background border-b border-b-background"
-                    : ""
+                  ? "text-background border-b border-b-background"
+                  : ""
                   }`}
               >
                 Não atribuidos (
@@ -399,11 +408,15 @@ const TicketsClose = () => {
                   ))}
                 </tbody>
               </table>
-              {ticketsPaginados.length <= 0 && (
-                <div className="flex items-center  justify-center bg-[#f8f8f8] py-3  w-[100%] shadow-md">
+              {loading ? (
+                <div className="flex items-center justify-center py-6 w-full">
+                  <div className="animate-spin rounded-full h-10 w-10 border-4 border-[#7E0000] border-t-transparent"></div>
+                </div>
+              ) : ticketsPaginados.length <= 0 ? (
+                <div className="flex items-center justify-center bg-[#f8f8f8] py-3 w-full shadow-md">
                   Não existe tickets
                 </div>
-              )}
+              ) : null}
             </div>
 
             {/*Paginação */}
@@ -440,8 +453,8 @@ const TicketsClose = () => {
 
                 <SquareArrowRight
                   className={`cursor-pointer ${currentPage >= Math.ceil(filteredTickets.length / itemPage)
-                      ? "opacity-50 cursor-not-allowed"
-                      : ""
+                    ? "opacity-50 cursor-not-allowed"
+                    : ""
                     }`}
                   size={25}
                   onClick={() => {

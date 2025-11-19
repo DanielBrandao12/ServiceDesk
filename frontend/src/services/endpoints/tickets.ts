@@ -7,11 +7,10 @@ export const ChamadasTickets = {
     const response = await api.get<TicketView[]>("/tickets/");
     return response.data;
   },
-  listarTicketsClose: async (): Promise<TicketView[]> => {
+listarTicketsClose: async (): Promise<TicketView[]> => {
     const response = await api.get<TicketView[]>("/tickets/closes");
     return response.data;
-  },
-
+},
   listarTicket: async (id: number): Promise<TicketView> => {
     const response = await api.get<TicketView>(`/tickets/${id}`);
     return response.data;

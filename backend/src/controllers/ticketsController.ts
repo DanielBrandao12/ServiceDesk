@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { Tickets, ViewTickets } from '../models/index';
+import { Tickets, ViewTickets, ViewRespostas } from '../models/index';
 import { TicketsAttributes } from '../types/tickets';
 import { sendEmail } from '../services/email/sendEMail';
 import { ticketCriadoTemplate } from '../services/email/templates/ticketCriado';
@@ -159,33 +159,58 @@ export const updateTicket = async (
   }
 };
 
-export const getTicketsClose = async (req: Request, res: Response): Promise<Response | any> => {
+
+
+export const getTicketsClose = async (req: Request, res: Response) => {
   try {
+ 
     const tickets = await ViewTickets.findAll({
       where: {
-        status: { [Op.eq]: 'Fechado' } // Op.ne = Not Equal
-      }
+        status: { [Op.eq]: "Fechado" },
+      },
+      order: [["data_criacao", "DESC"]],
+      raw: true, // melhora a performance
     });
 
-    const ticketsComRespostas = await Promise.all(
-      tickets.map(async (ticket) => {
-        const respostas = await getViewRespostaId(ticket.id_ticket);
-        return {
-          ...ticket.dataValues,
-          respostas,
-        };
-      })
-    );
+    if (tickets.length === 0) {
+      return res.status(200).json([]);
+    }
 
-    return res.status(200).json(ticketsComRespostas);
+   
+    const ids = tickets.map((t) => t.id_ticket);
+
+
+    const respostas = await ViewRespostas.findAll({
+      where: {
+        id_ticket: ids,
+      },
+      raw: true,
+    });
+
+ 
+    const respostasPorTicket = respostas.reduce((acc: any, resp: any) => {
+      if (!acc[resp.id_ticket]) acc[resp.id_ticket] = [];
+      acc[resp.id_ticket].push(resp);
+      return acc;
+    }, {});
+
+    // 4️⃣ Junta tickets + respostas
+    const resultado = tickets.map((ticket) => ({
+      ...ticket,
+      respostas: respostasPorTicket[ticket.id_ticket] || [],
+    }));
+
+    return res.status(200).json(resultado);
+
   } catch (error: any) {
-    console.error("Erro ao buscar tickets: ", error);
+    console.error("Erro ao buscar tickets fechados:", error);
 
     return res.status(500).json({
-      message: error.message || "Erro ao buscar tickets, tente novamente mais tarde.",
+      message: error.message || "Erro ao buscar tickets.",
     });
   }
 };
+
 
 
 export const getTickets = async (req: Request, res: Response): Promise<Response | any> => {
