@@ -1,4 +1,4 @@
-# 🛠️ Sistema de Chamados - Fatec
+# 🛠️ ServiceDesk - Sistema de Chamados
 
 Este sistema de chamados foi desenvolvido com o objetivo de **facilitar o gerenciamento de solicitações internas** na Faculdade de Tecnologia (Fatec). Ele permite que os usuários abram, acompanhem e finalizem chamados técnicos ou administrativos, organizando de forma eficiente a comunicação entre solicitantes e responsáveis pelos atendimentos.
 
