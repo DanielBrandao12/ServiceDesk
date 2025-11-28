@@ -1,11 +1,12 @@
 import { Request, Response } from 'express';
-import { Tickets, viewTickets } from '../models/index';
+import { Tickets, ViewTickets, ViewRespostas } from '../models/index';
 import { TicketsAttributes } from '../types/tickets';
 import { sendEmail } from '../services/email/sendEMail';
 import { ticketCriadoTemplate } from '../services/email/templates/ticketCriado';
 import { createHistorico, deleteHistorico } from './historicoStatusController';
 import { deleteResposta, getRespostaId, getViewRespostaId } from './respostasController';
 import { createAnexo, deleteAnexo } from './anexoController';
+import { Op } from 'sequelize';
 
 
 type CreateTicketBody = Omit<
@@ -14,7 +15,7 @@ type CreateTicketBody = Omit<
 >;
 
 type UpdateTicketBody = Partial<
-  Omit<TicketsAttributes, "assunto" | "email" | "nome_requisitante" | "descricao" | "codigo_ticket" | "data_criacao">
+  Omit<TicketsAttributes, "id_ticket" | "assunto" | "email" | "nome_requisitante" | "descricao" | "codigo_ticket" | "data_criacao" | "data_conclusao">
 >;
 
 const gerarCodigoTicket = (): string => {
@@ -116,7 +117,8 @@ export const updateTicket = async (
   res: Response
 ): Promise<Response | any> => {
   try {
-    const { id } = req.params;
+
+    const id = req.params.id;
 
     // Validação básica
     if (!id) {
@@ -136,6 +138,7 @@ export const updateTicket = async (
       where: { id_ticket: Number(id) },
     });
 
+    const ticketAtualizado = await Tickets.findOne({ where: { id_ticket: Number(id) } });
     // Se o status foi alterado, cria histórico
     if (dadosTicket.id_status !== undefined && dadosTicket.id_status !== null) {
       // Supondo que id_usuario venha da requisição ou do auth (ajuste conforme sua aplicação)
@@ -144,6 +147,7 @@ export const updateTicket = async (
     }
 
     return res.status(200).json({
+      ticket: ticketAtualizado,
       message: "Ticket alterado com sucesso!",
     });
   } catch (error: any) {
@@ -155,11 +159,79 @@ export const updateTicket = async (
   }
 };
 
+
+
+export const getTicketsClose = async (req: Request, res: Response) => {
+  try {
+ 
+    const tickets = await ViewTickets.findAll({
+      where: {
+        status: { [Op.eq]: "Fechado" },
+      },
+      order: [["data_criacao", "DESC"]],
+      raw: true, // melhora a performance
+    });
+
+    if (tickets.length === 0) {
+      return res.status(200).json([]);
+    }
+
+   
+    const ids = tickets.map((t) => t.id_ticket);
+
+
+    const respostas = await ViewRespostas.findAll({
+      where: {
+        id_ticket: ids,
+      },
+      raw: true,
+    });
+
+ 
+    const respostasPorTicket = respostas.reduce((acc: any, resp: any) => {
+      if (!acc[resp.id_ticket]) acc[resp.id_ticket] = [];
+      acc[resp.id_ticket].push(resp);
+      return acc;
+    }, {});
+
+    //  Junta tickets + respostas
+    const resultado = tickets.map((ticket) => ({
+      ...ticket,
+      respostas: respostasPorTicket[ticket.id_ticket] || [],
+    }));
+
+    return res.status(200).json(resultado);
+
+  } catch (error: any) {
+    console.error("Erro ao buscar tickets fechados:", error);
+
+    return res.status(500).json({
+      message: error.message || "Erro ao buscar tickets.",
+    });
+  }
+};
+
+
+
 export const getTickets = async (req: Request, res: Response): Promise<Response | any> => {
   try {
-    const tickets = await viewTickets.findAll();
+    const tickets = await ViewTickets.findAll({
+      where: {
+        status: { [Op.ne]: 'Fechado' } // Op.ne = Not Equal
+      }
+    });
 
-    return res.status(200).json(tickets); // 200 é o status correto para "sucesso"
+    const ticketsComRespostas = await Promise.all(
+      tickets.map(async (ticket) => {
+        const respostas = await getViewRespostaId(ticket.id_ticket);
+        return {
+          ...ticket.dataValues,
+          respostas,
+        };
+      })
+    );
+
+    return res.status(200).json(ticketsComRespostas);
   } catch (error: any) {
     console.error("Erro ao buscar tickets: ", error);
 
@@ -168,6 +240,7 @@ export const getTickets = async (req: Request, res: Response): Promise<Response 
     });
   }
 };
+
 
 export const getTicketsId = async (req: Request<{ id: string }>, res: Response): Promise<Response | any> => {
   const { id } = req.params;
@@ -210,7 +283,7 @@ export const deleteTicket = async (req: Request, res: Response): Promise<Respons
     }
 
     // Buscar respostas relacionadas
-    const respostas = await getRespostaId(id_ticket)
+    const respostas = await getRespostaId(id_ticket )
 
     const idsRespostas = respostas.map((res) => res.id_resposta);
 
@@ -236,7 +309,8 @@ export const deleteTicket = async (req: Request, res: Response): Promise<Respons
     });
   }
 };
-export const criarChamadoPorEmail = async (emailData:any) => {
+
+export const criarChamadoPorEmail = async (emailData: any) => {
   try {
     const { remetente, assunto, mensagem, anexos } = emailData;
     const { nome, email } = parseRemetente(remetente);
@@ -278,7 +352,7 @@ export const criarChamadoPorEmail = async (emailData:any) => {
       ticketData.id_usuario
     );
     if (Array.isArray(anexos) && anexos.length > 0) {
-      console.log(ticketCriado.codigo_ticket);
+      console.log(ticketCriado.codigo_ticket );
       await createAnexo(ticketCriado.codigo_ticket, null, anexos);
     }
     return {
@@ -312,4 +386,102 @@ const parseRemetente = (remetente: any) => {
 export const getTicketPorCodigo = async (codigoTicket: string) => {
   if (!codigoTicket) return null;
   return await Tickets.findOne({ where: { codigo_ticket: codigoTicket } });
+};
+
+export const getDashboardData = async (req: Request, res: Response): Promise<Response | any> => {
+ 
+
+  try {
+   
+    const { periodo } = req.params; // ex: 'Hoje', 'Esta semana', etc.
+   
+    // === Calcula o intervalo de datas ===
+    const agora = new Date();
+    let dataInicio: Date;
+
+    switch (periodo) {
+      case "Hoje":
+        dataInicio = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate());
+        break;
+
+      case "Esta semana": {
+        const primeiroDiaSemana = new Date(agora);
+        primeiroDiaSemana.setDate(agora.getDate() - agora.getDay());
+        dataInicio = primeiroDiaSemana;
+        break;
+      }
+
+      case "Este mês":
+        dataInicio = new Date(agora.getFullYear(), agora.getMonth(), 1);
+        break;
+
+      case "Este ano":
+        dataInicio = new Date(agora.getFullYear(), 0, 1);
+        break;
+
+      default:
+        dataInicio = new Date(0); // sem filtro (todos)
+    }
+
+    // === Filtro de data ===
+    const filtroData = {
+      data_criacao: {
+        [Op.gte]: dataInicio,
+        [Op.lte]: agora,
+      },
+    };
+
+    // === Busca tickets no período ===
+    const tickets = await ViewTickets.findAll({ where: filtroData });
+
+    // === Contagens por status ===
+    const total = tickets.length;
+    const abertos = tickets.filter((t) => t.status !== "Fechado").length;
+    const fechados = tickets.filter((t) => t.status === "Fechado").length;
+    const naoAtribuido = tickets.filter((t) => t.atribuido_a === null).length;
+    const atribuidos = tickets.filter((t) => t.atribuido_a === null).length;
+    const emAtendimento = tickets.filter((t) => t.status === "Em Atendimento").length;
+    const aguardando = tickets.filter((t) => t.status === "Aguardando Atendimento").length;
+    const aguardandoClassificacao = tickets.filter((t) => t.categorias === null).length;
+    const pendenteResposta = tickets.filter((t) => t.categorias === "Pendente Resposta do Solicitante").length;
+
+    // === Agrupamento por categoria ===
+    const categoriasContagem: Record<string, number> = {};
+
+    for (const t of tickets) {
+      const categoria = t.categorias || "Sem categoria";
+      categoriasContagem[categoria] = (categoriasContagem[categoria] || 0) + 1;
+    }
+
+    // transforma em array e ordena por quantidade (decrescente)
+    const categoriasOrdenadas = Object.entries(categoriasContagem)
+      .sort((a, b) => b[1] - a[1]) // ordena do maior pro menor
+      .slice(0, 8); // pega só as 8 primeiras
+
+    // transforma de volta em objeto
+    const categoriasTop8 = Object.fromEntries(categoriasOrdenadas);
+
+    // === Retorno para o front ===
+    return res.status(200).json({
+      periodo,
+      total,
+      status: {
+        abertos,
+        fechados,
+        emAtendimento,
+        aguardando,
+        naoAtribuido,
+        atribuidos,
+        aguardandoClassificacao,
+        pendenteResposta
+      },
+      categorias: categoriasTop8,
+    });
+  } catch (error: any) {
+    console.error("Erro ao gerar dados do dashboard:", error);
+    return res.status(500).json({
+      message: "Erro ao gerar dados do dashboard",
+      error: error.message,
+    });
+  }
 };

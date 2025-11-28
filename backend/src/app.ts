@@ -8,6 +8,8 @@ import usuairoRoutes from './routes/UsuarioRoute';
 import categoriaRoutes from './routes/CategoriaRoute';
 import historicoRoutes from './routes/HistoricoRoute';
 import authRoutes from './routes/LoginRoute';
+import anotacaoRoutes from './routes/AnotacaoRoute';
+import relatorioRoutes from './routes/RelatorioRoute';
 //import relatorio from './routes/RelatorioRoute';
 import respostaRoutes from './routes/RespostaRoute';
 import statusRoutes from './routes/StatusRoute';
@@ -42,11 +44,13 @@ app.use(session({
 app.use('/anexo', anexoRoutes);
 app.use('/usuarios', usuairoRoutes);
 app.use('/categoria', categoriaRoutes);
-app.use('/hitoricoStatus', historicoRoutes);
+app.use('/historicoStatus', historicoRoutes);
 app.use('/auth', authRoutes);
 app.use('/respostas', respostaRoutes);
 app.use('/status', statusRoutes);
 app.use('/tickets', ticketRoutes);
+app.use('/anotacao', anotacaoRoutes);
+app.use('/relatorio', relatorioRoutes);
 
 // Verificar e-mails periodicamente (a cada 5 minutos)
 setInterval(async () => {
@@ -55,14 +59,10 @@ setInterval(async () => {
 }, 1 * 30 * 1000); // 5 minutos em milissegundos
 
 // catch 404 and forward to error handler
-app.use(function (req, res, next) {
-  next(createError(404));
+app.use((req, res) => {
+  res.status(404).json({ error: "Rota não encontrada" });
 });
 
 
 
 export default app;
-function createError(arg0: number): any {
-  throw new Error('Function not implemented.');
-}
-

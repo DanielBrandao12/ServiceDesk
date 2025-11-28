@@ -5,23 +5,31 @@ import { criarChamadoPorEmail, getTicketPorCodigo } from './ticketsController';
 import { createRespostaAuto } from './respostasController';
 import { ticketCriadoTemplate } from '../services/email/templates/ticketCriado';
 import { sendEmail } from '../services/email/sendEMail';
+import { AnexosAttributes } from '../types/anexos';
+
 
 
 export const enviarRespostaAutomatica = async (
   remetente: string,
   codigoTicket: string,
-  mensagem: string
+  mensagem: string,
+  anexos?: any,
 ): Promise<void> => {
   try {
     if (!process.env.EMAIL_USER) {
       throw new Error("EMAIL_USER não está definido nas variáveis de ambiente.");
     }
-
+    console.log(anexos)
     await transporter.sendMail({
       from: process.env.EMAIL_USER,
       to: remetente,
       subject: `Atualização do chamado - ${codigoTicket}`,
-      html: mensagem ,//criar um template para respostas
+      html: mensagem,//criar um template para respostas
+       attachments: anexos?.map((anexo: { nome: any; arquivo: any; tipo: any; }) => ({
+        filename: anexo.nome,
+        content: anexo.arquivo,
+        contentType: anexo.tipo,
+      })),
     });
 
     console.log(`Resposta automática enviada para: ${remetente}`);
@@ -55,18 +63,19 @@ export const checkEmails = async () => {
       try {
         const parsed = await simpleParser(message.source);
 
+        const mensagemLimpa = limparMensagemEmail(parsed.html || parsed.text);
+
         const chamado = {
           remetente: parsed.from?.text || parsed.from || "Desconhecido",
           assunto: parsed.subject || "Sem assunto",
-          mensagem: parsed.html || parsed.text || "Sem mensagem",
-          anexos: parsed.attachments.map((att) => ({
+          mensagem: mensagemLimpa || "Sem mensagem",
+          anexos: parsed.attachments.map(att => ({
             nome: att.filename,
             tipo: att.contentType,
             tamanho: att.size,
             arquivo: att.content,
           })),
         };
-
         const codigoTicket = extrairCodigoTicket(chamado.assunto);
 
         if (codigoTicket) {
@@ -78,26 +87,26 @@ export const checkEmails = async () => {
               mensagem,
               chamado.anexos
             );
-            await connection.messageFlagsAdd(message.uid, ['\\Seen']);
+            connection.messageFlagsAdd(message.seq, ["\\Seen"]);
             continue;
           }
         }
 
         const ticketCriado = await criarChamadoPorEmail(chamado);
-    
-           await sendEmail({
-              to: chamado.remetente,
-              subject: `Chamado Criado - ${ticketCriado.ticketCriado?.codigo_ticket}`,
-              html: ticketCriadoTemplate(ticketCriado.ticketCriado?.codigo_ticket ),
-              attachments: [
-                {
-                  filename: "logo.png",
-                  path: "../backend/public/images/logo.png",
-                  cid: "logo",
-                },
-              ],
-            });
-        await connection.messageFlagsAdd(message.uid, ['\\Seen']);
+
+        await sendEmail({
+          to: chamado.remetente,
+          subject: `Chamado Criado - ${ticketCriado.ticketCriado?.codigo_ticket}`,
+          html: ticketCriadoTemplate(ticketCriado.ticketCriado?.codigo_ticket),
+          attachments: [
+            {
+              filename: "logo.png",
+              path: "../backend/public/images/logo.png",
+              cid: "logo",
+            },
+          ],
+        });
+       connection.messageFlagsAdd(message.seq, ["\\Seen"]);
       } catch (error) {
         console.error(`Erro ao processar o e-mail:`, error);
       }
@@ -117,3 +126,47 @@ const extrairCodigoTicket = (assunto: string) => {
   const match = assunto.match(regex);
   return match ? match[1] : null; // Retorna o código se encontrado, caso contrário retorna null
 };
+
+const  limparMensagemEmail = (html: string | undefined) => {
+    if (!html) return "";
+
+  // Remove <head>, <style> e <script> — só lixo técnico
+  html = html
+    .replace(/<head[\s\S]*?<\/head>/gi, "")
+    .replace(/<style[\s\S]*?<\/style>/gi, "")
+    .replace(/<script[\s\S]*?<\/script>/gi, "");
+
+  // Define padrões que marcam o início da mensagem anterior (vários provedores)
+  const padroes = [
+    /<div id=["']?divRplyFwdMsg["']?>/i, // Outlook
+    /<div class=["']?gmail_quote["']?>/i, // Gmail
+    /<blockquote class=["']?gmail_quote["']?>/i, // Gmail
+    /-----Mensagem original-----/i, // Outlook PT-BR
+    /On .*? wrote:/i, // Gmail/Apple Mail EN
+    /Em .*? escreveu:/i, // Gmail PT-BR
+    /<hr/i, // Outlook separador
+    /<div class=["']?yahoo_quoted["']?>/i, // Yahoo
+    /<div class=["']?replyContainer["']?>/i, // Apple Mail
+    /<div class=["']?moz-cite-prefix["']?>/i, // Thunderbird
+    /<blockquote/i, // fallback genérico
+  ];
+
+  // Corta o HTML na primeira correspondência de qualquer padrão
+  let corte = html.length;
+  for (const padrao of padroes) {
+    const match = html.search(padrao);
+    if (match !== -1 && match < corte) {
+      corte = match;
+    }
+  }
+  let atual = html.slice(0, corte);
+
+  // Limpa tags vazias e espaços inúteis (mantendo a estrutura visual)
+  atual = atual
+    .replace(/<div[^>]*>\s*<\/div>/gi, "") // remove divs vazias
+    .replace(/<p[^>]*>\s*<\/p>/gi, "") // remove parágrafos vazios
+    .replace(/\s{2,}/g, " ") // normaliza espaços
+    .trim();
+
+  return atual;
+}

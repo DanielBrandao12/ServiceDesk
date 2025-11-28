@@ -4,8 +4,8 @@ import { Anexos } from '../models/index';// Certifique-se que esse import esteja
 
 
 export const getAnexoId = async (req: Request, res: Response): Promise<Response | any> => {
-  const { id  } = req.params;
-    
+  const { id } = req.params;
+
 
   try {
     const anexos = await Anexos.findAll({
@@ -15,7 +15,7 @@ export const getAnexoId = async (req: Request, res: Response): Promise<Response 
     });
 
     if (anexos.length === 0) {
-      return res.status(404).json({ message: 'Anexos não encontrados.' });
+      return res.json({ message: 'Anexos não encontrados.' });
     }
 
     return res.status(200).json(anexos);
@@ -49,14 +49,14 @@ export const getAnexos = async (req: Request, res: Response): Promise<Response |
 export const deleteAnexo = async (codigoTicket: string | any, idsRespostas: number[] | any): Promise<{ success: boolean; message: string }> => {
   try {
 
-    if(codigoTicket){
+    if (codigoTicket) {
       await Anexos.destroy({
         where: { ticket_id: codigoTicket },
       });
 
     }
-    if(idsRespostas){
-       await Anexos.destroy({
+    if (idsRespostas) {
+      await Anexos.destroy({
         where: { resposta_id: idsRespostas },
       });
     }
@@ -77,6 +77,7 @@ export const deleteAnexo = async (codigoTicket: string | any, idsRespostas: numb
 
 export const createAnexo = async (idTicket: any, idResposta: number | null, dadosAnexo: any[]) => {
   try {
+    console.log(idTicket, dadosAnexo)
     if (!idTicket && !idResposta) {
       console.warn("Nenhum ID válido fornecido para anexar arquivos.");
       return;
@@ -105,3 +106,41 @@ export const createAnexo = async (idTicket: any, idResposta: number | null, dado
     throw new Error("Erro ao criar anexos");
   }
 };
+
+export const inserirAnexo = async (req: Request, res: Response): Promise<any> => {
+  try {
+    const { idResposta, idTicket } = req.body;
+    console.log(idTicket)
+    const arquivos = req.files as Express.Multer.File[];
+
+    console.log("Recebendo anexos:", arquivos);
+
+    if (!arquivos || arquivos.length === 0) {
+      return res.status(400).json({ mensagem: "Nenhum arquivo recebido." });
+    }
+
+    const dadosAnexo = arquivos.map((file) => ({
+      nome: file.originalname,
+      tipo: file.mimetype,
+      arquivo: file.buffer, // se estiver salvando em blob
+    }));
+
+
+
+
+    const anexosCriados = await createAnexo(
+      idTicket ? Number(idTicket) : null,
+      idResposta ? Number(idResposta) : null,
+      dadosAnexo
+    );
+
+    return res.status(201).json({
+      mensagem: "Anexos criados com sucesso!",
+      anexos: anexosCriados,
+    });
+  } catch (error) {
+    console.error("Erro ao inserir anexos:", error);
+    return res.status(500).json({ mensagem: "Erro ao inserir anexos." });
+  }
+};
+

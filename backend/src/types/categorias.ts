@@ -3,6 +3,6 @@ export interface CategoriaAttributes {
   id_categoria: number;
   nome?: string;
   criado_por?: string;
-  status?: string;
+  ativo?: boolean;
   data_criacao?: Date;
 }

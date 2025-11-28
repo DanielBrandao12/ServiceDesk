@@ -1,6 +1,6 @@
 
 import { Request, Response } from 'express';
-import {  viewRespostas, Respostas } from '../models/index'; // certifique-se de importar corretamente
+import {  ViewRespostas, Respostas } from '../models/index'; // certifique-se de importar corretamente
 import { ViewRespostasAttributes, RespostasAttributes } from '../types/respostas'; // ajuste o nome conforme seu projeto
 import { enviarRespostaAutomatica } from './emailController';
 import { createAnexo } from './anexoController';
@@ -15,16 +15,16 @@ interface Conteudo {
 }
 
 interface MarcarComoLidaBody {
-  ids: number[];
+  id: number;
 }
 
 
 export const getViewRespostaId = async (id_ticket: number): Promise<ViewRespostasAttributes[]> => {
   try {
-    const respostas = await viewRespostas.findAll({
+    const respostas = await ViewRespostas.findAll({
       where: { id_ticket },
     });
-
+    
     return respostas;
   } catch (error) {
     console.error("Erro ao buscar respostas:", error);
@@ -94,6 +94,17 @@ export const createResposta = async (
 ): Promise<Response | any> => {
   try {
     const { id_ticket, id_usuario, conteudo, codigoTicket, remetente } = req.body;
+    const anexos = req.files as Express.Multer.File[];
+      
+    if (!anexos ) {
+      return res.status(400).json({ mensagem: "Nenhum arquivo recebido." });
+    }
+
+    const dadosAnexo = anexos.map((file) => ({
+      nome: file.originalname,
+      tipo: file.mimetype,
+      arquivo: file.buffer, // se estiver salvando em blob
+    }));
 
     const respostaCriada = await Respostas.create({
       data_hora: new Date(),
@@ -107,7 +118,7 @@ export const createResposta = async (
   return res.status(400).json({ message: "Dados obrigatórios ausentes." });
 }
 
-    enviarRespostaAutomatica(remetente, codigoTicket, conteudo);
+    enviarRespostaAutomatica(remetente, codigoTicket, conteudo, dadosAnexo);
 
     return res.status(201).json({
       message: "Resposta criada com sucesso!",
@@ -124,22 +135,16 @@ export const createResposta = async (
 
 
 export const marcarComoLida = async (
-  req: Request<{}, {}, MarcarComoLidaBody>,
+  req: Request<{}, {}, { id: number }>,
   res: Response
 ): Promise<Response | any> => {
   try {
-    const { ids } = req.body;
-
-    if (!ids || !Array.isArray(ids) || ids.length === 0) {
-      return res
-        .status(400)
-        .json({ message: "IDs das respostas são obrigatórios." });
-    }
+    const { id } = req.body;
 
     const [linhasAtualizadas] = await Respostas.update(
       { lida: true },
       {
-        where: { id_resposta: ids },
+        where: { id_resposta: id },
       }
     );
 

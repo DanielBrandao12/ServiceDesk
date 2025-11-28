@@ -9,7 +9,7 @@ export class Categoria extends Model<CategoriaAttributes, CategoriaCreationAttri
   public id_categoria!: number;
   public nome?: string;
   public criado_por?: string;
-  public status?: string;
+  public ativo?: boolean;
   public data_criacao?: Date;
 }
 
@@ -30,8 +30,8 @@ export default function initCategoriasModel(sequelize: Sequelize): typeof Catego
         type: DataTypes.STRING(255),
         allowNull: true,
       },
-      status: {
-        type: DataTypes.STRING(50),
+      ativo: {
+        type: DataTypes.BOOLEAN,
         allowNull: true,
       },
       data_criacao: {

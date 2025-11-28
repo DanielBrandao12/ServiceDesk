@@ -4,7 +4,7 @@ export interface UsuariosAttributes {
   email?: string | null;
   senha_hash?: string | null;
   nome_usuario?: string | null;
-  perfil: string;
+  perfil?: string;
 }
 
 

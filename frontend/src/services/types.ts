@@ -1,5 +1,6 @@
 
 export interface Ticket {
+    ticket: any;
     id_ticket: number;
     codigo_ticket: string;
     assunto: string;
@@ -15,11 +16,19 @@ export interface Ticket {
 }
 
 export interface TicketView extends Ticket{
+    ticketCriado: any;
+    ticket: any;
+    respostas: any;
+    nome_usuarioAtribuido: string;
     status: string;
     categorias: string;
 }
 
 export interface Usuarios {
+    nomeUser: any;
+    token: string;
+  
+   
     id_usuario: number;
     nome_completo: string;
     email: string;
@@ -27,6 +36,8 @@ export interface Usuarios {
     nome_usuario: string;
     perfil: string;
 }
+
+
 
 export interface Status {
     id_status: number;
@@ -37,21 +48,28 @@ export interface Status {
 }
 
 export interface Resposta {
+    respostaCriada: any;
     id_resposta: number;
     data_hora: string;
     conteudo: string;
     id_usuario: number;
     id_ticket: number;
+    codigoTicket: string;
+    remetente: string
     lida: boolean;
+    anexoData: any;
 }
 
 export interface RespostaView extends Resposta {
+  anexos: any;
      nome_usuario: string;
     email: string;
     nome_requisitante: string;
 }
 
 export interface Anexo {
+    headers: any;
+    data: any;
     id: number;
     nome: string;
     tipo: string;
@@ -64,11 +82,12 @@ export interface Categoria {
     id_categoria: number;
     nome: string;
     criado_por: string;
-    status: string;
-    data_criação: string;
+    ativo: boolean;
+    data_criacao: string;
 }
 
 export interface HistoricoStatus {
+    nome_status: string;
     id_historico: number;
     data_hora: string;
     id_ticket: number;
@@ -78,5 +97,15 @@ export interface HistoricoStatus {
 
 
 export interface MensagemRetorno {
-    mensagem: string;
+    ticket: Ticket;
+    message: string;
+}
+
+export interface Anotacao {
+    id: number;
+    descricao: string;
+    data_hora: Date | any;
+    id_usuario: number;
+    id_ticket: number;
+    nome_usuario: string;
 }

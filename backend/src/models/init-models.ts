@@ -7,6 +7,7 @@ import _respostas from './respostas';
 import _status from './status';
 import _tickets from './tickets';
 import _usuarios from './usuarios';
+import _anotacao from './anotacao';
 
 export function initModels(sequelize: Sequelize) {
   const anexos = _anexos(sequelize);
@@ -16,6 +17,7 @@ export function initModels(sequelize: Sequelize) {
   const status = _status(sequelize);
   const tickets = _tickets(sequelize);
   const usuarios = _usuarios(sequelize);
+  const anotacao = _anotacao(sequelize);
 
   // Relacionamentos
   tickets.belongsTo(categorias, { as: "id_categoria_categoria", foreignKey: "id_categoria" });
@@ -45,6 +47,12 @@ export function initModels(sequelize: Sequelize) {
   tickets.belongsTo(usuarios, { as: "id_usuario_usuario", foreignKey: "id_usuario" });
   usuarios.hasMany(tickets, { as: "tickets", foreignKey: "id_usuario" });
 
+  anotacao.belongsTo(usuarios, { as: "id_usuario_usuario", foreignKey: "id_usuario" });
+usuarios.hasMany(anotacao, { as: "anotacao", foreignKey: "id_usuario" });
+
+anotacao.belongsTo(tickets, { as: "id_ticket_ticket", foreignKey: "id_ticket" });
+tickets.hasMany(anotacao, { as: "anotacao", foreignKey: "id_ticket" });
+
   return {
     anexos,
     categorias,
@@ -53,5 +61,6 @@ export function initModels(sequelize: Sequelize) {
     status,
     tickets,
     usuarios,
+    anotacao
   };
 }

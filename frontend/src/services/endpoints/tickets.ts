@@ -7,13 +7,21 @@ export const ChamadasTickets = {
     const response = await api.get<TicketView[]>("/tickets/");
     return response.data;
   },
-
+listarTicketsClose: async (): Promise<TicketView[]> => {
+    const response = await api.get<TicketView[]>("/tickets/closes");
+    return response.data;
+},
   listarTicket: async (id: number): Promise<TicketView> => {
     const response = await api.get<TicketView>(`/tickets/${id}`);
     return response.data;
   },
+  
+  listarDashBoard: async (periodo: string | any): Promise<any> => {
+    const response = await api.get<any | null>(`/tickets/dashboard/${periodo}`);
+    return response.data;
+  },
 
-  criarTicket: async (dadosTicket: Omit<Ticket, "id_ticket" | "codigo_ticket" | "data_criacao">): Promise<TicketView> => {
+  criarTicket: async (dadosTicket: Omit<Ticket, "id_ticket" | "codigo_ticket" | "data_criacao" | "ticket">): Promise<TicketView> => {
     const response = await api.post<TicketView>("/tickets/createTicket", dadosTicket)
     return response.data
   },
@@ -23,8 +31,9 @@ export const ChamadasTickets = {
       Ticket,
       "assunto" | "email" | "nome_requisitante" | "descricao" | "codigo_ticket" | "data_criacao"
     >
-  ): Promise<Ticket> => {
-    const response = await api.put<Ticket>("/tickets/updateTicket/", dadosTicket);
+  ): Promise<MensagemRetorno> => {
+    const response = await api.put<MensagemRetorno>(`/tickets/updateTicket/${dadosTicket.id_ticket}`, dadosTicket);
+    
     return response.data;
   },
 

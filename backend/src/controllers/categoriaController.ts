@@ -5,7 +5,7 @@ import { CategoriaAttributes } from '../types/categorias';
 
 type CreateCategoriaBody = Omit<CategoriaAttributes, "id_categoria">
 
-type UpdateCategoriaBody = Pick<CategoriaAttributes, "id_categoria" | "nome" | "status">;
+type UpdateCategoriaBody = Pick<CategoriaAttributes, "id_categoria" | "nome" | "ativo">;
 
 
 
@@ -42,13 +42,13 @@ export const createCategoria = async (
     res: Response
 ): Promise<Response | any> => {
     try {
-        const { nome, status, criado_por } = req.body;
+        const { nome, ativo, criado_por } = req.body;
 
 
         const categoria = await Categorias.create({
             nome,
             criado_por,
-            status,
+            ativo,
             data_criacao: new Date(),
         });
 
@@ -69,7 +69,7 @@ export const updateCategoria = async (
     res: Response
 ): Promise<Response | any> => {
     try {
-        const { id_categoria, nome, status } = req.body;
+        const { id_categoria, nome, ativo } = req.body;
 
         const categoriaExistente = await Categorias.findByPk(id_categoria);
         if (!categoriaExistente) {
@@ -77,7 +77,7 @@ export const updateCategoria = async (
         }
 
         const categoriaEditada = await Categorias.update(
-            { nome, status },
+            { nome, ativo },
             { where: { id_categoria } }
         );
 
@@ -98,7 +98,7 @@ export const deleteCategoria = async (
     res: Response
 ): Promise<Response | any> => {
     try {
-        const { id_categoria, status } = req.body;
+        const { id_categoria, ativo } = req.body;
 
         // Verifica se a categoria existe
         const categoriaExistente = await Categorias.findByPk(id_categoria);
@@ -110,7 +110,7 @@ export const deleteCategoria = async (
         }
 
         // Impede a exclusão se a categoria estiver ativa
-        if (status === "Ativo") {
+        if (ativo) {
             return res.status(400).json({
                 message: "Categoria em uso, não é possível excluir.",
             });

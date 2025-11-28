@@ -1,7 +1,8 @@
 import { Router } from 'express';
 
-import { createTickets, updateTicket, getTickets, getTicketsId, deleteTicket } from '../controllers/ticketsController';
+import { createTickets, updateTicket, getTickets, getTicketsId, deleteTicket, getTicketsClose, getDashboardData } from '../controllers/ticketsController';
 import { checkEmails } from '../controllers/emailController';
+import notLoggedMiddleware from '../middlewares/notLoggedMiddlewares';
 
 const router = Router();
 
@@ -16,10 +17,12 @@ router.get('/verificar-emails', async (req, res) => {
   }
 });
 
-router.post('/createTicket', createTickets);
-router.put('/updateTicket', updateTicket);
-router.get('/', getTickets);
-router.get('/:id', getTicketsId);
-router.delete('/delete/:id', deleteTicket);
+router.post('/createTicket',notLoggedMiddleware, createTickets);
+router.put('/updateTicket/:id',notLoggedMiddleware, updateTicket);
+router.get('/',notLoggedMiddleware, getTickets);
+router.get('/dashboard/:periodo',notLoggedMiddleware, getDashboardData);
+router.get('/closes',notLoggedMiddleware, getTicketsClose);
+router.get('/:id',notLoggedMiddleware, getTicketsId);
+router.delete('/delete/:id',notLoggedMiddleware, deleteTicket);
 
 export default router;

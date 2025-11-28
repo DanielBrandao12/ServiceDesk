@@ -7,6 +7,7 @@ export interface RespostasAttributes {
   id_ticket?: number | null;
   lida?: boolean | null;
 
+
 }
 
 
