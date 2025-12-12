@@ -82,16 +82,18 @@ const CardsInfo = () => {
                 carregando ? (<p className="text-lg font-medium">Carregando dados do dashboard...</p>) :
                     (
 
-                        <div className="flex flex-col gap-6 justify-center items-center w-[15%] bg-[#242423]">
+                        <div className="flex flex-col gap-2 justify-center items-center w-[15%] bg-[#242423] border-4 border-primary  ">
 
 
                             {/* ====== MÉTRICAS ====== */}
-                            <div className="flex flex-col gap-8 mr-2 ">
+                              <h2 className="text-3xl font-bold text-gray-200 text-center  p-4 uppercase">
+                                          Chamados Service Desk
+                                        </h2>
 
                                 {cardsVisiveis.map((item, index) => (
                                     <div
                                         key={index}
-                                        className="flex flex-col items-center justify-center w-[235px]  h-[235px]  bg-[#242423] m-2 rounded-xl shadow-sm border border-gray-200 transition-all duration-300"
+                                        className="flex flex-col items-center justify-center w-[200px]  h-[200px]  bg-[#242423] m-2 rounded-xl shadow-sm border border-gray-200 transition-all duration-300"
                                     >
                                         <div className="mb-2">{item.icone}</div>
                                         <h3 className="text-lg font-medium text-gray-200 text-center p-4">
@@ -103,7 +105,7 @@ const CardsInfo = () => {
                                     </div>
                                 ))}
 
-                            </div>
+                            
 
                             {/* ====== CATEGORIAS ====== */}
                             {
