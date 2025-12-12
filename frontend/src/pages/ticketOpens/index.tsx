@@ -283,7 +283,7 @@ const TicketsOpen = () => {
               >
                 Atribuidos a mim (
                 {
-                  tickets.filter((ticket) => parseInt(ticket.atribuido_a) === 1)
+                  tickets.filter((ticket) => parseInt(ticket.atribuido_a) === user.id)
                     .length
                 }
                 )
@@ -300,7 +300,7 @@ const TicketsOpen = () => {
                   tickets.filter(
                     (ticket) =>
                       parseInt(ticket.atribuido_a) &&
-                      parseInt(ticket.atribuido_a) !== 1
+                      parseInt(ticket.atribuido_a) !== user.id
                   ).length
                 }
                 )
