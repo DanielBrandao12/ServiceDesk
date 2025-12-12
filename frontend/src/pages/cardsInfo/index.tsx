@@ -5,7 +5,6 @@ import { ChamadasTickets } from "../../services/endpoints/tickets";
 import {
     Ticket,
     CheckCircle,
-    Users,
     Clock,
     AlertTriangle,
     MessageCircle,
@@ -43,15 +42,15 @@ const CardsInfo = () => {
     }, []);
 
     const metricas = [
-        { titulo: "Tickets abertos", valor: dados?.status.abertos, icone: <Ticket className="text-primary" /> },
-        { titulo: "Tickets fechados", valor: dados?.status.fechados, icone: <CheckCircle className="text-primary" /> },
-        { titulo: "Tickets atribuídos", valor: dados?.status.atribuidos, icone: <Users className="text-primary" /> },
-        { titulo: "Tickets não atribuídos", valor: dados?.status.naoAtribuido, icone: <AlertTriangle className="text-primary" /> },
-        { titulo: "Aguardando Classificação", valor: dados?.status.aguardandoClassificacao, icone: <HelpCircle className="text-primary" /> },
-        { titulo: "Em atendimento", valor: dados?.status.emAtendimento, icone: <Clock className="text-primary" /> },
-        { titulo: "Aguardando atendimento", valor: dados?.status.aguardando, icone: <Hourglass className="text-primary" /> },
-        { titulo: "Pendente Resposta do Solicitante", valor: dados?.status.pendenteResposta, icone: <MessageCircle className="text-primary" /> },
-        { titulo: "Total de Tickets", valor: dados?.total, icone: <Ticket className="text-primary" /> },
+        { titulo: "Tickets abertos", valor: dados?.status.abertos, icone: <Ticket size={45} className="text-gray-200" /> },
+        { titulo: "Tickets fechados", valor: dados?.status.fechados, icone: <CheckCircle size={45} className="text-gray-200" /> },
+       
+        { titulo: "Tickets não atribuídos", valor: dados?.status.naoAtribuido, icone: <AlertTriangle size={45} className="text-gray-200" /> },
+        { titulo: "Aguardando Classificação", valor: dados?.status.aguardandoClassificacao, icone: <HelpCircle size={45} className="text-gray-200" /> },
+        { titulo: "Em Atendimento", valor: dados?.status.emAtendimento, icone: <Clock size={45} className="text-gray-200" /> },
+        { titulo: "Aguardando Atendimento", valor: dados?.status.aguardando, icone: <Hourglass size={45} className="text-gray-200" /> },
+        { titulo: "Pendente Resposta do Solicitante", valor: dados?.status.pendenteResposta, icone: <MessageCircle size={45} className="text-gray-200" /> },
+        { titulo: "Total de Tickets", valor: dados?.total, icone: <Ticket size={45} className="text-gray-200" /> },
     ];
 
     const [indiceAtual, setIndiceAtual] = useState(0);
@@ -60,7 +59,7 @@ const CardsInfo = () => {
     useEffect(() => {
         const intervalo = setInterval(() => {
             setIndiceAtual((i) => {
-                const proximo = i + 2;
+                const proximo = i + 3;
                 return proximo >= metricas.length ? 0 : proximo;
             });
         }, 15000);
@@ -69,35 +68,36 @@ const CardsInfo = () => {
     }, [metricas.length]);
 
     // Determina os 4 itens da página atual
-    const cardsVisiveis = metricas.slice(indiceAtual, indiceAtual + 2);
+    const cardsVisiveis = metricas.slice(indiceAtual, indiceAtual + 3);
 
     return (
         <div className="flex flex-row w-full h-[100vh]">
             <iframe
+            
                 src="https://10.68.96.5/public/mapshow.htm?id=2954&mapid=AF761232-767F-4DC0-A958-DE26C5F0B297"
-                className="w-[85%] h-[100%]"
+                className="w-[90%] h-[100%]"
 
             ></iframe>
             {
                 carregando ? (<p className="text-lg font-medium">Carregando dados do dashboard...</p>) :
                     (
 
-                        <div className="flex flex-col m-5 gap-2 p-2 w-[15%] ">
+                        <div className="flex flex-col gap-6 justify-center items-center w-[10%] bg-[#242423]">
 
 
                             {/* ====== MÉTRICAS ====== */}
-                            <div className="flex flex-col gap-8">
+                            <div className="flex flex-col gap-8 mt-4">
 
                                 {cardsVisiveis.map((item, index) => (
                                     <div
                                         key={index}
-                                        className="flex flex-col items-center justify-center h-[430px] p-6 bg-white rounded-xl shadow-sm border border-gray-200 transition-all duration-300"
+                                        className="flex flex-col items-center justify-center w-[240px]  h-[430px] p-8 bg-[#242423] m-2 rounded-xl shadow-sm border border-gray-200 transition-all duration-300"
                                     >
                                         <div className="mb-2">{item.icone}</div>
-                                        <h3 className="text-xl font-medium text-gray-700 text-center mb-1">
+                                        <h3 className="text-3xl font-medium text-gray-200 text-center mb-1 p-4">
                                             {item.titulo}
                                         </h3>
-                                        <span className="text-6xl font-semibold text-gray-900">
+                                        <span className="text-8xl font-semibold text-white">
                                             {item.valor}
                                         </span>
                                     </div>
