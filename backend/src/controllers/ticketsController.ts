@@ -161,7 +161,7 @@ export const updateTicket = async (
 
 
 
-export const getTicketsClose = async (req: Request, res: Response) => {
+export const getTicketsClose = async (req: Request | any, res: Response | any) => {
   try {
  
     const tickets = await ViewTickets.findAll({
@@ -439,11 +439,11 @@ export const getDashboardData = async (req: Request, res: Response): Promise<Res
     const abertos = tickets.filter((t) => t.status !== "Fechado").length;
     const fechados = tickets.filter((t) => t.status === "Fechado").length;
     const naoAtribuido = tickets.filter((t) => t.atribuido_a === null).length;
-    const atribuidos = tickets.filter((t) => t.atribuido_a === null).length;
-    const emAtendimento = tickets.filter((t) => t.status === "Em Atendimento").length;
+    const atribuidos = tickets.filter((t) => t.atribuido_a !== null).length;
+    const emAtendimento = tickets.filter((t) => t.status === "Em atendimento").length;
     const aguardando = tickets.filter((t) => t.status === "Aguardando Atendimento").length;
     const aguardandoClassificacao = tickets.filter((t) => t.categorias === null).length;
-    const pendenteResposta = tickets.filter((t) => t.categorias === "Pendente Resposta do Solicitante").length;
+    const pendenteResposta = tickets.filter((t) => t.status === "Pendente Resposta do Solicitante").length;
 
     // === Agrupamento por categoria ===
     const categoriasContagem: Record<string, number> = {};

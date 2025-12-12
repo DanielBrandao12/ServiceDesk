@@ -15,6 +15,7 @@ import Card from "../../components/card/card";
 import { useNavigate } from "react-router-dom";
 
 import { formatarData } from "../../utils/date";
+import { getUserData } from "../../utils/getUser";
 
 const TicketsOpen = () => {
   const [filtroAtivo, setFiltroAtivo] = useState<string>("todos");
@@ -26,6 +27,7 @@ const TicketsOpen = () => {
   const [busca, setBusca] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [itemPage, setItemPage] = useState<number>(5);
+  const user: any = getUserData();
 
   const indexInicio = (currentPage - 1) * itemPage;
   const indexFim = indexInicio + itemPage;
@@ -33,63 +35,63 @@ const TicketsOpen = () => {
 
   const navigate = useNavigate()
 
- useEffect(() => {
-  const carregarTickets = async () => {
-    try {
-      const res = await ChamadasTickets.listarTickets();
+  useEffect(() => {
+    const carregarTickets = async () => {
+      try {
+        const res = await ChamadasTickets.listarTickets();
 
-      const ticketsComUsuarios = await Promise.all(
-        res.map(async (ticket) => {
-          try {
-            if (ticket.atribuido_a) {
-              const user = await chamadasUsers.listarUsuario(
-                parseInt(ticket.atribuido_a)
-              );
+        const ticketsComUsuarios = await Promise.all(
+          res.map(async (ticket) => {
+            try {
+              if (ticket.atribuido_a) {
+                const user = await chamadasUsers.listarUsuario(
+                  parseInt(ticket.atribuido_a)
+                );
+
+                return {
+                  ...ticket,
+                  nome_usuarioAtribuido:
+                    user?.nomeUser?.nome_usuario ?? "Não atribuído",
+                };
+              }
 
               return {
                 ...ticket,
-                nome_usuarioAtribuido:
-                  user?.nomeUser?.nome_usuario ?? "Não atribuído",
+                nome_usuarioAtribuido: "Não atribuído",
+              };
+            } catch (error) {
+              console.error("Erro ao buscar usuário:", error);
+
+              return {
+                ...ticket,
+                nome_usuarioAtribuido: "Erro ao carregar",
               };
             }
+          })
+        );
 
-            return {
-              ...ticket,
-              nome_usuarioAtribuido: "Não atribuído",
-            };
-          } catch (error) {
-            console.error("Erro ao buscar usuário:", error);
+        const validTickets = ticketsComUsuarios.filter(
+          (ticket): ticket is TicketView =>
+            ticket !== undefined && ticket !== null
+        );
 
-            return {
-              ...ticket,
-              nome_usuarioAtribuido: "Erro ao carregar",
-            };
-          }
-        })
-      );
+        setTickets(validTickets);
+      } catch (err) {
+        console.error("Erro ao buscar tickets:", err);
+      }
+    };
 
-      const validTickets = ticketsComUsuarios.filter(
-        (ticket): ticket is TicketView =>
-          ticket !== undefined && ticket !== null
-      );
-
-      setTickets(validTickets);
-    } catch (err) {
-      console.error("Erro ao buscar tickets:", err);
-    }
-  };
-
-  // Chamada inicial
-  carregarTickets();
-
-  // Intervalo de 30 segundos
-  const interval = setInterval(() => {
+    // Chamada inicial
     carregarTickets();
-  }, 30000);
 
-  // Cleanup ao desmontar
-  return () => clearInterval(interval);
-}, []);
+    // Intervalo de 30 segundos
+    const interval = setInterval(() => {
+      carregarTickets();
+    }, 30000);
+
+    // Cleanup ao desmontar
+    return () => clearInterval(interval);
+  }, []);
 
 
   const selectQtde = (qtde: number) => {
@@ -132,12 +134,12 @@ const TicketsOpen = () => {
 
     if (filtroAtivo === "meus") {
       filtrados = filtrados.filter(
-        (ticket) => parseInt(ticket.atribuido_a) === 1 //aqui vai ser o id do user logado
+        (ticket) => parseInt(ticket.atribuido_a) === user.id //aqui vai ser o id do user logado
       );
     } else if (filtroAtivo === "outros") {
       filtrados = filtrados.filter(
         (ticket) =>
-          parseInt(ticket.atribuido_a) && parseInt(ticket.atribuido_a) !== 1 //aqui vai ser o id do user logado
+          parseInt(ticket.atribuido_a) && parseInt(ticket.atribuido_a) !== user.id //aqui vai ser o id do user logado
       );
     } else if (filtroAtivo === "nao_atribuidos") {
       filtrados = filtrados.filter((ticket) => !ticket.atribuido_a);
@@ -173,7 +175,7 @@ const TicketsOpen = () => {
   }, [tickets, filtroPrioridade, filtroAtivo, ordenacao, busca]);
 
 
-  const handleTicketSelected = (idTicket : number) => {
+  const handleTicketSelected = (idTicket: number) => {
     navigate(`/Ticket/${idTicket}`)
   }
 
@@ -248,21 +250,19 @@ const TicketsOpen = () => {
             <div className="flex  flex-row justify-between text-gray-400 my-10  font-bold border-b  border-b-[#D1D5DB]">
               <span
                 onClick={() => setFiltroAtivo("todos")}
-                className={`py-2 cursor-pointer ${
-                  filtroAtivo === "todos"
+                className={`py-2 cursor-pointer ${filtroAtivo === "todos"
                     ? "text-background border-b border-b-background"
                     : ""
-                }`}
+                  }`}
               >
                 Todos os tickets ({tickets.length})
               </span>
               <span
                 onClick={() => setFiltroAtivo("hoje")}
-                className={`py-2 cursor-pointer ${
-                  filtroAtivo === "hoje"
+                className={`py-2 cursor-pointer ${filtroAtivo === "hoje"
                     ? "text-background border-b border-b-background"
                     : ""
-                }`}
+                  }`}
               >
                 Hoje (
                 {
@@ -276,44 +276,41 @@ const TicketsOpen = () => {
               </span>
               <span
                 onClick={() => setFiltroAtivo("meus")}
-                className={`py-2 cursor-pointer ${
-                  filtroAtivo === "meus"
+                className={`py-2 cursor-pointer ${filtroAtivo === "meus"
                     ? "text-background border-b border-b-background"
                     : ""
-                }`}
+                  }`}
               >
                 Atribuidos a mim (
                 {
-                  tickets.filter((ticket) => parseInt(ticket.atribuido_a) === 1)
+                  tickets.filter((ticket) => parseInt(ticket.atribuido_a) === user.id)
                     .length
                 }
                 )
               </span>
               <span
                 onClick={() => setFiltroAtivo("outros")}
-                className={`py-2 cursor-pointer ${
-                  filtroAtivo === "outros"
+                className={`py-2 cursor-pointer ${filtroAtivo === "outros"
                     ? "text-background border-b border-b-background"
                     : ""
-                }`}
+                  }`}
               >
                 Atribuidos a outros (
                 {
                   tickets.filter(
                     (ticket) =>
                       parseInt(ticket.atribuido_a) &&
-                      parseInt(ticket.atribuido_a) !== 1
+                      parseInt(ticket.atribuido_a) !== user.id
                   ).length
                 }
                 )
               </span>
               <span
                 onClick={() => setFiltroAtivo("nao_atribuidos")}
-                className={`py-2 cursor-pointer ${
-                  filtroAtivo === "nao_atribuidos"
+                className={`py-2 cursor-pointer ${filtroAtivo === "nao_atribuidos"
                     ? "text-background border-b border-b-background"
                     : ""
-                }`}
+                  }`}
               >
                 Não atribuidos (
                 {tickets.filter((ticket) => !ticket.atribuido_a).length})
@@ -370,10 +367,9 @@ const TicketsOpen = () => {
                   {ticketsPaginados.map((ticket, index) => (
                     <tr
                       key={ticket.id_ticket}
-                      className={`text-center text-[12px] ${
-                        index % 2 === 0 ? "bg-white" : "bg-[#f8f8f8]"
-                      } cursor-pointer`}
-                      onClick={() =>handleTicketSelected(ticket.id_ticket)}
+                      className={`text-center text-[12px] ${index % 2 === 0 ? "bg-white" : "bg-[#f8f8f8]"
+                        } cursor-pointer`}
+                      onClick={() => handleTicketSelected(ticket.id_ticket)}
                     >
                       <td className="py-3  border-b border-b-[#ddd] w-[20%] whitespace-nowrap overflow-hidden  text-ellipsis">
                         {ticket.codigo_ticket}
@@ -389,15 +385,14 @@ const TicketsOpen = () => {
                       </td>
                       <td className="py-3  border-b border-b-[#ddd] w-[20%] whitespace-nowrap overflow-hidden text-ellipsis">
                         <span
-                          className={`px-2 py-1 border ${
-                            ticket.nivel_prioridade === "Prioridade Baixa"
+                          className={`px-2 py-1 border ${ticket.nivel_prioridade === "Prioridade Baixa"
                               ? "bg-[#cdf8c7]  border-[#1EFF00]"
                               : ticket.nivel_prioridade === "Prioridade Média"
-                              ? "bg-[#ffffcf]  border-[#b1b126]"
-                              : ticket.nivel_prioridade === "Prioridade Alta"
-                              ? "bg-[#ffcfcf]  border-[#FF0000]"
-                              : "border-none"
-                          }  rounded`}
+                                ? "bg-[#ffffcf]  border-[#b1b126]"
+                                : ticket.nivel_prioridade === "Prioridade Alta"
+                                  ? "bg-[#ffcfcf]  border-[#FF0000]"
+                                  : "border-none"
+                            }  rounded`}
                         >
                           {ticket.nivel_prioridade.replace("Prioridade", "") ||
                             "Não atribuído"}
@@ -417,18 +412,18 @@ const TicketsOpen = () => {
                             (resposta: { lida: boolean }) =>
                               resposta.lida === false
                           ) && (
-                            <div className="flex items-center">
-                              <Bell size={15} color="#BD2626" />
-                              <span className="relative bottom-1 text-[#BD2626] font-bold">
-                                {
-                                  ticket.respostas.filter(
-                                    (resposta: { lida: boolean }) =>
-                                      !resposta.lida
-                                  ).length
-                                }
-                              </span>
-                            </div>
-                          )}
+                              <div className="flex items-center">
+                                <Bell size={15} color="#BD2626" />
+                                <span className="relative bottom-1 text-[#BD2626] font-bold">
+                                  {
+                                    ticket.respostas.filter(
+                                      (resposta: { lida: boolean }) =>
+                                        !resposta.lida
+                                    ).length
+                                  }
+                                </span>
+                              </div>
+                            )}
                         </div>
                       </td>
                     </tr>
@@ -459,9 +454,8 @@ const TicketsOpen = () => {
               </div>
               <div className="flex flex-row items-center gap-5">
                 <SquareArrowLeft
-                  className={`cursor-pointer ${
-                    currentPage === 1 ? "opacity-50 cursor-not-allowed" : ""
-                  }`}
+                  className={`cursor-pointer ${currentPage === 1 ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
                   size={25}
                   onClick={() => {
                     if (currentPage > 1) {
@@ -476,11 +470,10 @@ const TicketsOpen = () => {
                 </span>
 
                 <SquareArrowRight
-                  className={`cursor-pointer ${
-                    currentPage >= Math.ceil(filteredTickets.length / itemPage)
+                  className={`cursor-pointer ${currentPage >= Math.ceil(filteredTickets.length / itemPage)
                       ? "opacity-50 cursor-not-allowed"
                       : ""
-                  }`}
+                    }`}
                   size={25}
                   onClick={() => {
                     const totalPages = Math.ceil(

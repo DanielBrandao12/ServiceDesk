@@ -33,13 +33,7 @@ export const Relatorio = () => {
     const gerarRelatorio = async () => {
         try {
             setCarregando(true);
-
-
-            console.log("Enviando filtros:", filtros);
-
             const res = await ChamadaRelatorio.gerarRelatorio(filtros);
-            console.log("Resposta do servidor:", res);
-
             setDadosRelatorio(res);
         } catch (err: any) {
 
