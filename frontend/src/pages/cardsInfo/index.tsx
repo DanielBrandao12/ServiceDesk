@@ -39,12 +39,20 @@ const CardsInfo = () => {
         };
 
         buscarDashboard();
+
+        // Intervalo de 30 segundos
+        const interval = setInterval(() => {
+            buscarDashboard();
+        }, 15000);
+
+        // Cleanup ao desmontar
+        return () => clearInterval(interval);
     }, []);
 
     const metricas = [
         { titulo: "Tickets abertos", valor: dados?.status.abertos, icone: <Ticket size={25} className="text-gray-200" /> },
         { titulo: "Tickets fechados", valor: dados?.status.fechados, icone: <CheckCircle size={25} className="text-gray-200" /> },
-       
+
         { titulo: "Tickets não atribuídos", valor: dados?.status.naoAtribuido, icone: <AlertTriangle size={25} className="text-gray-200" /> },
         { titulo: "Aguardando Classificação", valor: dados?.status.aguardandoClassificacao, icone: <HelpCircle size={25} className="text-gray-200" /> },
         { titulo: "Em Atendimento", valor: dados?.status.emAtendimento, icone: <Clock size={25} className="text-gray-200" /> },
@@ -71,9 +79,9 @@ const CardsInfo = () => {
     const cardsVisiveis = metricas.slice(indiceAtual, indiceAtual + 4);
 
     return (
-        <div className="flex flex-row w-full h-[100vh]">
+        <div className="flex flex-row w-full h-[100vh] bg-[#242423]">
             <iframe
-            
+
                 src="https://10.68.96.5/public/mapshow.htm?id=2954&mapid=AF761232-767F-4DC0-A958-DE26C5F0B297"
                 className="w-[85%] h-[100%]"
 
@@ -82,30 +90,30 @@ const CardsInfo = () => {
                 carregando ? (<p className="text-lg font-medium">Carregando dados do dashboard...</p>) :
                     (
 
-                        <div className="flex flex-col gap-2 justify-center items-center w-[15%] bg-[#242423] border-4 border-primary  ">
+                        <div className="flex flex-col gap-2 justify-center items-center w-[15%] bg-[#242423] border-4 border-primary mr-1 ">
 
 
                             {/* ====== MÉTRICAS ====== */}
-                              <h2 className="text-3xl font-bold text-gray-200 text-center  p-4 uppercase">
-                                          Chamados Service Desk
-                                        </h2>
+                            <h2 className="text-3xl font-bold text-gray-200 text-center  p-4 uppercase">
+                                Chamados Service Desk
+                            </h2>
 
-                                {cardsVisiveis.map((item, index) => (
-                                    <div
-                                        key={index}
-                                        className="flex flex-col items-center justify-center w-[200px]  h-[200px]  bg-[#242423] m-2 rounded-xl shadow-sm border border-gray-200 transition-all duration-300"
-                                    >
-                                        <div className="mb-2">{item.icone}</div>
-                                        <h3 className="text-lg font-medium text-gray-200 text-center p-4">
-                                            {item.titulo}
-                                        </h3>
-                                        <span className="text-4xl font-semibold text-white">
-                                            {item.valor}
-                                        </span>
-                                    </div>
-                                ))}
+                            {cardsVisiveis.map((item, index) => (
+                                <div
+                                    key={index}
+                                    className="flex flex-col items-center justify-center w-[200px]  h-[200px]  bg-[#242423] m-2 rounded-xl shadow-sm border border-gray-200 transition-all duration-300"
+                                >
+                                    <div className="mb-2">{item.icone}</div>
+                                    <h3 className="text-lg font-medium text-gray-200 text-center p-4">
+                                        {item.titulo}
+                                    </h3>
+                                    <span className="text-4xl font-semibold text-white">
+                                        {item.valor}
+                                    </span>
+                                </div>
+                            ))}
 
-                            
+
 
                             {/* ====== CATEGORIAS ====== */}
                             {
