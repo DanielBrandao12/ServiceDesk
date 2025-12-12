@@ -42,15 +42,15 @@ const CardsInfo = () => {
     }, []);
 
     const metricas = [
-        { titulo: "Tickets abertos", valor: dados?.status.abertos, icone: <Ticket size={45} className="text-gray-200" /> },
-        { titulo: "Tickets fechados", valor: dados?.status.fechados, icone: <CheckCircle size={45} className="text-gray-200" /> },
+        { titulo: "Tickets abertos", valor: dados?.status.abertos, icone: <Ticket size={25} className="text-gray-200" /> },
+        { titulo: "Tickets fechados", valor: dados?.status.fechados, icone: <CheckCircle size={25} className="text-gray-200" /> },
        
-        { titulo: "Tickets não atribuídos", valor: dados?.status.naoAtribuido, icone: <AlertTriangle size={45} className="text-gray-200" /> },
-        { titulo: "Aguardando Classificação", valor: dados?.status.aguardandoClassificacao, icone: <HelpCircle size={45} className="text-gray-200" /> },
-        { titulo: "Em Atendimento", valor: dados?.status.emAtendimento, icone: <Clock size={45} className="text-gray-200" /> },
-        { titulo: "Aguardando Atendimento", valor: dados?.status.aguardando, icone: <Hourglass size={45} className="text-gray-200" /> },
-        { titulo: "Pendente Resposta do Solicitante", valor: dados?.status.pendenteResposta, icone: <MessageCircle size={45} className="text-gray-200" /> },
-        { titulo: "Total de Tickets", valor: dados?.total, icone: <Ticket size={45} className="text-gray-200" /> },
+        { titulo: "Tickets não atribuídos", valor: dados?.status.naoAtribuido, icone: <AlertTriangle size={25} className="text-gray-200" /> },
+        { titulo: "Aguardando Classificação", valor: dados?.status.aguardandoClassificacao, icone: <HelpCircle size={25} className="text-gray-200" /> },
+        { titulo: "Em Atendimento", valor: dados?.status.emAtendimento, icone: <Clock size={25} className="text-gray-200" /> },
+        { titulo: "Aguardando Atendimento", valor: dados?.status.aguardando, icone: <Hourglass size={25} className="text-gray-200" /> },
+        { titulo: "Pendente Resposta do Solicitante", valor: dados?.status.pendenteResposta, icone: <MessageCircle size={25} className="text-gray-200" /> },
+        { titulo: "Total de Tickets", valor: dados?.total, icone: <Ticket size={25} className="text-gray-200" /> },
     ];
 
     const [indiceAtual, setIndiceAtual] = useState(0);
@@ -75,29 +75,29 @@ const CardsInfo = () => {
             <iframe
             
                 src="https://10.68.96.5/public/mapshow.htm?id=2954&mapid=AF761232-767F-4DC0-A958-DE26C5F0B297"
-                className="w-[90%] h-[100%]"
+                className="w-[93%] h-[100%]"
 
             ></iframe>
             {
                 carregando ? (<p className="text-lg font-medium">Carregando dados do dashboard...</p>) :
                     (
 
-                        <div className="flex flex-col gap-6 justify-center items-center w-[10%] bg-[#242423]">
+                        <div className="flex flex-col gap-6 justify-center items-center w-[7%] bg-[#242423]">
 
 
                             {/* ====== MÉTRICAS ====== */}
-                            <div className="flex flex-col gap-8 mt-4">
+                            <div className="flex flex-col gap-8 mr-2">
 
                                 {cardsVisiveis.map((item, index) => (
                                     <div
                                         key={index}
-                                        className="flex flex-col items-center justify-center w-[240px]  h-[430px] p-8 bg-[#242423] m-2 rounded-xl shadow-sm border border-gray-200 transition-all duration-300"
+                                        className="flex flex-col items-center justify-center w-[130px]  h-[235px]  bg-[#242423] m-2 rounded-xl shadow-sm border border-gray-200 transition-all duration-300"
                                     >
                                         <div className="mb-2">{item.icone}</div>
-                                        <h3 className="text-3xl font-medium text-gray-200 text-center mb-1 p-4">
+                                        <h3 className="text-lg font-medium text-gray-200 text-center p-4">
                                             {item.titulo}
                                         </h3>
-                                        <span className="text-8xl font-semibold text-white">
+                                        <span className="text-4xl font-semibold text-white">
                                             {item.valor}
                                         </span>
                                     </div>
