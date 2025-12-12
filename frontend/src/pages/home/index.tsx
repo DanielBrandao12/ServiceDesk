@@ -50,7 +50,7 @@ const Home = () => {
     { titulo: "Aguardando Classificação", valor: dados?.status.aguardandoClassificacao, icone: <HelpCircle className="text-primary" /> },
     { titulo: "Em atendimento", valor: dados?.status.emAtendimento, icone: <Clock className="text-primary" /> },
     { titulo: "Aguardando atendimento", valor: dados?.status.aguardando, icone: <Hourglass className="text-primary" /> },
-    { titulo: "Pendente Resposta", valor: dados?.status.pendenteResposta, icone: <MessageCircle className="text-primary" /> },
+    { titulo: "Pendente Resposta do Solicitante", valor: dados?.status.pendenteResposta, icone: <MessageCircle className="text-primary" /> },
   ];
 
 

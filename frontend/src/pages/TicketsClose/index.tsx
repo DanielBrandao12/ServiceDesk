@@ -15,6 +15,7 @@ import Card from "../../components/card/card";
 import { useNavigate } from "react-router-dom";
 
 import { formatarData } from "../../utils/date";
+import { getUserData } from "../../utils/getUser";
 
 const TicketsClose = () => {
   const [filtroAtivo, setFiltroAtivo] = useState<string>("todos");
@@ -27,7 +28,7 @@ const TicketsClose = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [itemPage, setItemPage] = useState<number>(5);
   const [loading, setLoading] = useState(true);
-
+  const user: any = getUserData();
 
   const indexInicio = (currentPage - 1) * itemPage;
   const indexFim = indexInicio + itemPage;
@@ -75,7 +76,7 @@ const TicketsClose = () => {
             (ticket): ticket is TicketView =>
               ticket !== undefined && ticket !== null
           );
-    
+
           setTickets(validTickets);
         }).finally(() => {
           setLoading(false);
@@ -126,12 +127,12 @@ const TicketsClose = () => {
 
     if (filtroAtivo === "meus") {
       filtrados = filtrados.filter(
-        (ticket) => parseInt(ticket.atribuido_a) === 1 //aqui vai ser o id do user logado
+        (ticket) => parseInt(ticket.atribuido_a) === user.id //aqui vai ser o id do user logado
       );
     } else if (filtroAtivo === "outros") {
       filtrados = filtrados.filter(
         (ticket) =>
-          parseInt(ticket.atribuido_a) && parseInt(ticket.atribuido_a) !== 1 //aqui vai ser o id do user logado
+          parseInt(ticket.atribuido_a) && parseInt(ticket.atribuido_a) !== user.id //aqui vai ser o id do user logado
       );
     } else if (filtroAtivo === "nao_atribuidos") {
       filtrados = filtrados.filter((ticket) => !ticket.atribuido_a);
@@ -278,7 +279,7 @@ const TicketsClose = () => {
               >
                 Atribuidos a mim (
                 {
-                  tickets.filter((ticket) => parseInt(ticket.atribuido_a) === 1)
+                  tickets.filter((ticket) => parseInt(ticket.atribuido_a) === user.id)
                     .length
                 }
                 )
@@ -295,7 +296,7 @@ const TicketsClose = () => {
                   tickets.filter(
                     (ticket) =>
                       parseInt(ticket.atribuido_a) &&
-                      parseInt(ticket.atribuido_a) !== 1
+                      parseInt(ticket.atribuido_a) !== user.id
                   ).length
                 }
                 )

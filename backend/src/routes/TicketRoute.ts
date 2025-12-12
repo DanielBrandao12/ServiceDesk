@@ -1,6 +1,6 @@
 import { Router } from 'express';
 
-import { createTickets, updateTicket, getTickets, getTicketsId, deleteTicket, getTicketsClose, getDashboardData } from '../controllers/ticketsController';
+import { createTickets, updateTicket, getTickets, getTicketsId, deleteTicket, getTicketsClose, getDashboardData, getCardsInfo } from '../controllers/ticketsController';
 import { checkEmails } from '../controllers/emailController';
 import notLoggedMiddleware from '../middlewares/notLoggedMiddlewares';
 
@@ -20,7 +20,8 @@ router.get('/verificar-emails', async (req, res) => {
 router.post('/createTicket',notLoggedMiddleware, createTickets);
 router.put('/updateTicket/:id',notLoggedMiddleware, updateTicket);
 router.get('/',notLoggedMiddleware, getTickets);
-router.get('/dashboard/:periodo',notLoggedMiddleware, getDashboardData);
+router.get('/dashboard/:periodo', getDashboardData);
+router.get('/cardsInfo', getCardsInfo)
 router.get('/closes',notLoggedMiddleware, getTicketsClose);
 router.get('/:id',notLoggedMiddleware, getTicketsId);
 router.delete('/delete/:id',notLoggedMiddleware, deleteTicket);

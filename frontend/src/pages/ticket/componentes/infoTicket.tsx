@@ -34,7 +34,7 @@ import Alert from "../../../components/alert";
 interface TicketProps {
   ticket?: TicketView; // array de tickets
   setLoadTicket: () => void;
-  handlePrint:  () => void;
+  handlePrint: () => void;
 }
 
 export const InfoTicket: React.FC<TicketProps> = ({
@@ -60,8 +60,8 @@ export const InfoTicket: React.FC<TicketProps> = ({
   const [message, setMessage] = useState<string>("")
   const [showConfirm, setShowConfirm] = useState(false);
 
- 
-  
+
+
   const listPrioridade: string[] = ["Prioridade Baixa", "Prioridade Média", "Prioridade Alta"]
 
   const navigate = useNavigate()
@@ -97,21 +97,21 @@ export const InfoTicket: React.FC<TicketProps> = ({
 
   }, [ticket]);
 
-const salvarEdicao = async () => {
-  const dados: any = {
-    id_ticket: ticket?.ticket.id_ticket,
-    id_status: idStatus ?? ticket?.ticket.id_status, // usa o novo valor se existir, senão mantém o original
-    atribuido_a: idTecnico ?? parseInt(ticket?.ticket.atribuido_a),
-    nivel_prioridade: prioridade || ticket?.ticket.nivel_prioridade,
-    id_categoria: idCategoria ?? ticket?.ticket.id_categoria,
-  };
+  const salvarEdicao = async () => {
+    const dados: any = {
+      id_ticket: ticket?.ticket.id_ticket,
+      id_status: idStatus ?? ticket?.ticket.id_status, // usa o novo valor se existir, senão mantém o original
+      atribuido_a: idTecnico ?? parseInt(ticket?.ticket.atribuido_a),
+      nivel_prioridade: prioridade || ticket?.ticket.nivel_prioridade,
+      id_categoria: idCategoria ?? ticket?.ticket.id_categoria,
+    };
 
-  const ticketAlterado = await ChamadasTickets.editarTicket(dados);
-  setLoadTicket();
-  setEdit(false);
-  setShowAlert(true);
-  setMessage(ticketAlterado.message);
-};
+    const ticketAlterado = await ChamadasTickets.editarTicket(dados);
+    setLoadTicket();
+    setEdit(false);
+    setShowAlert(true);
+    setMessage(ticketAlterado.message);
+  };
 
 
 
@@ -219,21 +219,26 @@ const salvarEdicao = async () => {
               onChange={(e) => setIdStatus(Number(e.target.value))}
             >
               {statusList &&
-                statusList.map((item, index) => (
-                  <option
-                    key={index}
-                    value={item.id_status}
-                    className={
-                      item.id_status === ticket?.ticket.id_status
-                        ? "text-green-600"
-                        : ""
-                    }
-                    
-                    title={item.nome}
-                  >
-                    {item.nome}
-                  </option>
-                ))}
+                [...statusList]                     // cria uma cópia
+                  .sort((a, b) => {
+                    if (a.id_status === ticket?.ticket.id_status) return -1;  // a vem primeiro
+                    if (b.id_status === ticket?.ticket.id_status) return 1;   // b vem primeiro
+                    return 0;
+                  })
+                  .map((item) => (
+                    <option
+                      key={item.id_status}
+                      value={item.id_status}
+                      title={item.nome}
+                      className={
+                        item.id_status === ticket?.ticket.id_status
+                          ? "text-green-600"
+                          : ""
+                      }
+                    >
+                      {item.nome}
+                    </option>
+                  ))}
             </select>
           </div>
 
@@ -246,20 +251,26 @@ const salvarEdicao = async () => {
               onChange={(e) => setIdCategoria(Number(e.target.value))}
             >
               {categorias &&
-                categorias.map((item) => (
-                  <option
-                    key={item.id_categoria}
-                    value={item.id_categoria}
-                    className={
-                      item.id_categoria === ticket?.ticket.id_categoria
-                        ? "text-green-600"
-                        : ""
-                    }
-                    title={item.nome}
-                  >
-                    {item.nome}
-                  </option>
-                ))}
+                [...categorias]
+                  .sort((a, b) => {
+                    if (a.id_categoria === ticket?.ticket.id_categoria) return -1;  // a vem primeiro
+                    if (b.id_categoria === ticket?.ticket.id_categoria) return 1;   // b vem primeiro
+                    return 0;
+                  })
+                  .map((item) => (
+                    <option
+                      key={item.id_categoria}
+                      value={item.id_categoria}
+                      className={
+                        item.id_categoria === ticket?.ticket.id_categoria
+                          ? "text-green-600"
+                          : ""
+                      }
+                      title={item.nome}
+                    >
+                      {item.nome}
+                    </option>
+                  ))}
             </select>
           </div>
 
@@ -272,16 +283,22 @@ const salvarEdicao = async () => {
               onChange={(e) => setPrioridade(e.target.value)}
             >
               {
-                listPrioridade.map((item, index)=>(
-                    <option  key={index} value={item} 
-                     className={
-                      item === ticket?.ticket.prioridade
-                        ? "text-green-600"
-                        : ""
-                    }
-                    title={prioridade}
+                listPrioridade
+                  .sort((a, b) => {
+                    if (a === ticket?.ticket.nivel_prioridade) return -1;  // a vem primeiro
+                    if (b === ticket?.ticket.nivel_prioridade) return 1;   // b vem primeiro
+                    return 0;
+                  })
+                  .map((item, index) => (
+                    <option key={index} value={item}
+                      className={
+                        item === ticket?.ticket.nivel_prioridade
+                          ? "text-green-600"
+                          : ""
+                      }
+                      title={prioridade}
                     >{item}</option>
-                ))
+                  ))
               }
             </select>
           </div>
@@ -295,20 +312,26 @@ const salvarEdicao = async () => {
               onChange={(e) => setIdTecnico(Number(e.target.value))}
             >
               {usuarios &&
-                usuarios.map((item) => (
-                  <option
-                    key={item.id_usuario}
-                    value={item.id_usuario}
-                    className={
-                      item.id_usuario === parseInt(ticket?.ticket.atribuido_a)
-                        ? "text-green-600"
-                        : ""
-                    }
-                    title={item.nome_usuario}
-                  >
-                    {item.nome_usuario}
-                  </option>
-                ))}
+                [...usuarios]
+                  .sort((a, b) => {
+                    if (a.id_usuario === parseInt(ticket?.ticket.atribuido_a)) return -1;  // a vem primeiro
+                    if (b.id_usuario === parseInt(ticket?.ticket.atribuido_a)) return 1;   // b vem primeiro
+                    return 0;
+                  }).
+                  map((item) => (
+                    <option
+                      key={item.id_usuario}
+                      value={item.id_usuario}
+                      className={
+                        item.id_usuario === parseInt(ticket?.ticket.atribuido_a)
+                          ? "text-green-600"
+                          : ""
+                      }
+                      title={item.nome_usuario}
+                    >
+                      {item.nome_usuario}
+                    </option>
+                  ))}
             </select>
           </div>
 

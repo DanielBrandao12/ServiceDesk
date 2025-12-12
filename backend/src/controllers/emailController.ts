@@ -50,10 +50,11 @@ export const checkEmails = async () => {
     console.log("Conexão estabelecida com sucesso!");
 
     await connection.mailboxOpen("INBOX");
+    
 
     const uids = await connection.search({ seen: false });
     console.log(`Encontrados ${uids.length} e-mails não lidos.`);
-
+      
     if (uids.length === 0) {
       console.log("Nenhum e-mail novo para processar.");
       return;
@@ -87,7 +88,8 @@ export const checkEmails = async () => {
               mensagem,
               chamado.anexos
             );
-            connection.messageFlagsAdd(message.uid, ['\\Seen']);
+            connection.messageFlagsAdd(message.seq, ["\\Seen"]);
+
             continue;
           }
         }
@@ -106,7 +108,8 @@ export const checkEmails = async () => {
             },
           ],
         });
-        connection.messageFlagsAdd(message.uid, ['\\Seen']);
+     connection.messageFlagsAdd(message.seq, ["\\Seen"]);
+
       } catch (error) {
         console.error(`Erro ao processar o e-mail:`, error);
       }
@@ -170,3 +173,5 @@ const  limparMensagemEmail = (html: string | undefined) => {
 
   return atual;
 }
+
+

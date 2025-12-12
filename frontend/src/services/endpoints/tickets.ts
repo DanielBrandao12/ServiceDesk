@@ -40,7 +40,11 @@ listarTicketsClose: async (): Promise<TicketView[]> => {
   deletarTicket: async (id: number): Promise<MensagemRetorno> => {
     const response = await api.delete<MensagemRetorno>(`/tickets/delete/${id}`);
     return response.data;
-  }
+  },
+   listarCardsInfo: async (): Promise<any> => {
+    const response = await api.get<any | null>(`/tickets/cardsInfo`);
+    return response.data;
+  },
 
 };
 
