@@ -16,7 +16,7 @@ import {
 const CardsInfo = () => {
 
     const [dados, setDados] = useState<any>(null);
-    const [categorias, setCategorias] = useState<any[]>([]);
+    //const [categorias, setCategorias] = useState<any[]>([]);
 
     const [carregando, setCarregando] = useState<boolean>(false);
 
@@ -28,7 +28,7 @@ const CardsInfo = () => {
 
                 if (res) {
                     setDados(res);
-                    setCategorias(res.categorias ? Object.entries(res.categorias) : []);
+                    //setCategorias(res.categorias ? Object.entries(res.categorias) : []);
                 } else {
                     console.warn("Nenhum dado retornado do dashboard.");
                 }
@@ -60,7 +60,7 @@ const CardsInfo = () => {
     useEffect(() => {
         const intervalo = setInterval(() => {
             setIndiceAtual((i) => {
-                const proximo = i + 4;
+                const proximo = i + 2;
                 return proximo >= metricas.length ? 0 : proximo;
             });
         }, 15000);
@@ -69,7 +69,7 @@ const CardsInfo = () => {
     }, [metricas.length]);
 
     // Determina os 4 itens da página atual
-    const cardsVisiveis = metricas.slice(indiceAtual, indiceAtual + 5);
+    const cardsVisiveis = metricas.slice(indiceAtual, indiceAtual + 2);
 
     return (
         <div className="flex flex-row w-full h-[100vh]">
@@ -86,18 +86,18 @@ const CardsInfo = () => {
 
 
                             {/* ====== MÉTRICAS ====== */}
-                            <div className="flex flex-col gap-10">
+                            <div className="flex flex-col gap-8">
 
                                 {cardsVisiveis.map((item, index) => (
                                     <div
                                         key={index}
-                                        className="flex flex-col items-center justify-center p-6 bg-white rounded-xl shadow-sm border border-gray-200 transition-all duration-300"
+                                        className="flex flex-col items-center justify-center h-[430px] p-6 bg-white rounded-xl shadow-sm border border-gray-200 transition-all duration-300"
                                     >
                                         <div className="mb-2">{item.icone}</div>
-                                        <h3 className="text-sm font-medium text-gray-700 text-center mb-1">
+                                        <h3 className="text-xl font-medium text-gray-700 text-center mb-1">
                                             {item.titulo}
                                         </h3>
-                                        <span className="text-4xl font-semibold text-gray-900">
+                                        <span className="text-6xl font-semibold text-gray-900">
                                             {item.valor}
                                         </span>
                                     </div>
