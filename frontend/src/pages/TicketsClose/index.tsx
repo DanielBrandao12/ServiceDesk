@@ -6,7 +6,7 @@ import {
   SquareArrowRight,
 } from "lucide-react";
 import PaginaPadrao from "../../components/paginaPadrao";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { ChamadasTickets } from "../../services/endpoints/tickets";
 import { chamadasUsers } from "../../services/endpoints/users";
 import type { TicketView } from "../../services/types";
@@ -17,6 +17,8 @@ import { useNavigate } from "react-router-dom";
 import { formatarData } from "../../utils/date";
 import { getUserData } from "../../utils/getUser";
 
+import { useConfig } from "../../utils/configContext";
+
 const TicketsClose = () => {
   const [filtroAtivo, setFiltroAtivo] = useState<string>("todos");
   const [filtroPrioridade, setFiltroPrioridade] = useState<string[]>([]);
@@ -26,15 +28,36 @@ const TicketsClose = () => {
   const [ordenacao, setOrdenacao] = useState<string>("");
   const [busca, setBusca] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [itemPage, setItemPage] = useState<number>(5);
+  const { config, setConfig } = useConfig();
+
+
   const [loading, setLoading] = useState(true);
   const user: any = getUserData();
 
-  const indexInicio = (currentPage - 1) * itemPage;
-  const indexFim = indexInicio + itemPage;
+  const indexInicio = (currentPage - 1) * parseInt(config || "5");
+  const indexFim = indexInicio + parseInt(config || "5");
   const ticketsPaginados = filteredTickets.slice(indexInicio, indexFim);
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+
+    const dropdownRef = useRef<HTMLDivElement>(null);
+  
+  
+    useEffect(() => {
+      const pageClickEvent = (e: MouseEvent) => {
+        // Se o dropdown está aberto e o clique foi fora dele...
+        if (showFilter && dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+          setShowFilter(false);
+        }
+      };
+  
+      // Importante: use 'click' para evitar conflitos com a renderização
+      document.addEventListener('click', pageClickEvent);
+  
+      return () => {
+        document.removeEventListener('click', pageClickEvent);
+      };
+    }, [showFilter]);
 
   useEffect(() => {
 
@@ -88,7 +111,7 @@ const TicketsClose = () => {
   }, []);
 
   const selectQtde = (qtde: number) => {
-    setItemPage(qtde);
+    setConfig(qtde.toString());
   };
 
   // Alterna seleção da prioridade
@@ -204,14 +227,20 @@ const TicketsClose = () => {
               </div>
               {/*Filtro */}
               <div
-                onClick={() => setShowFilter(!showFilter)}
+                 onClick={(e) => {
+                  e.stopPropagation(); // Impede que o clique suba para o 'document'
+                  setShowFilter(!showFilter);
+                }}
                 className="relative flex flex-row items-center gap-2 cursor-pointer"
               >
                 <span className="font-semibold">Filtro</span>
                 <Filter size={20} />
 
                 {showFilter && (
-                  <div className="absolute left-0 top-full mt-2 w-36 sm:w-48 md:w-56 lg:w-64 bg-white border border-gray-500 rounded shadow-lg z-[999] p-3">
+                  <div 
+                    ref={dropdownRef}
+                    onClick={(e) => e.stopPropagation()}
+                    className="absolute left-0 top-full mt-2 w-36 sm:w-48 md:w-56 lg:w-64 bg-white border border-gray-500 rounded shadow-lg z-[999] p-3">
                     <form className="flex flex-col gap-2 text-sm text-gray-700">
                       {[
                         "Prioridade Baixa",
@@ -426,6 +455,7 @@ const TicketsClose = () => {
                 <span>Exibir</span>
                 <select
                   onChange={(event) => selectQtde(Number(event.target.value))}
+                  value={parseInt(config || "5")}
                   className="p-1 border border-[#B3B7BC] outline-none rounded"
                 >
                   <option value={5}>5</option>
@@ -449,18 +479,18 @@ const TicketsClose = () => {
 
                 <span>
                   Página {currentPage} de{" "}
-                  {Math.max(1, Math.ceil(filteredTickets.length / itemPage))}
+                  {Math.max(1, Math.ceil(filteredTickets.length / parseInt(config || "5")))}
                 </span>
 
                 <SquareArrowRight
-                  className={`cursor-pointer ${currentPage >= Math.ceil(filteredTickets.length / itemPage)
+                  className={`cursor-pointer ${currentPage >= Math.ceil(filteredTickets.length / parseInt(config || "5"))
                     ? "opacity-50 cursor-not-allowed"
                     : ""
                     }`}
                   size={25}
                   onClick={() => {
                     const totalPages = Math.ceil(
-                      filteredTickets.length / itemPage
+                      filteredTickets.length / parseInt(config || "5")
                     );
                     if (currentPage < totalPages) {
                       setCurrentPage((prev) => prev + 1);

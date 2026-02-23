@@ -63,7 +63,7 @@ const Home = () => {
             <div className="flex flex-col m-10 gap-6 p-4 w-full overflow-scroll">
               {/* ====== CABEÇALHO ====== */}
               <div className="flex flex-row justify-between items-center">
-                <h1 className="text-2xl font-semibold text-gray-800">Visão Geral de Hoje</h1>
+                <h1 className="text-2xl font-semibold text-gray-800">Visão Geral {periodo}</h1>
 
                 <div className="flex flex-row items-center gap-2 text-right">
                   <label className="text-sm font-semibold text-gray-600">Período</label>

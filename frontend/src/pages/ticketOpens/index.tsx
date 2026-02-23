@@ -6,7 +6,7 @@ import {
   SquareArrowRight,
 } from "lucide-react";
 import PaginaPadrao from "../../components/paginaPadrao";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ChamadasTickets } from "../../services/endpoints/tickets";
 import { chamadasUsers } from "../../services/endpoints/users";
 import type { TicketView } from "../../services/types";
@@ -17,6 +17,8 @@ import { useNavigate } from "react-router-dom";
 import { formatarData } from "../../utils/date";
 import { getUserData } from "../../utils/getUser";
 
+import { useConfig } from "../../utils/configContext";
+
 const TicketsOpen = () => {
   const [filtroAtivo, setFiltroAtivo] = useState<string>("todos");
   const [filtroPrioridade, setFiltroPrioridade] = useState<string[]>([]);
@@ -26,14 +28,35 @@ const TicketsOpen = () => {
   const [ordenacao, setOrdenacao] = useState<string>("mais_novo");
   const [busca, setBusca] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [itemPage, setItemPage] = useState<number>(5);
+  const { config, setConfig } = useConfig();
+
+
   const user: any = getUserData();
 
-  const indexInicio = (currentPage - 1) * itemPage;
-  const indexFim = indexInicio + itemPage;
+  const indexInicio = (currentPage - 1) * parseInt(config || "5");
+  const indexFim = indexInicio + parseInt(config || "5");
   const ticketsPaginados = filteredTickets.slice(indexInicio, indexFim);
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+
+  useEffect(() => {
+    const pageClickEvent = (e: MouseEvent) => {
+      // Se o dropdown está aberto e o clique foi fora dele...
+      if (showFilter && dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setShowFilter(false);
+      }
+    };
+
+    // Importante: use 'click' para evitar conflitos com a renderização
+    document.addEventListener('click', pageClickEvent);
+
+    return () => {
+      document.removeEventListener('click', pageClickEvent);
+    };
+  }, [showFilter]);
 
   useEffect(() => {
     const carregarTickets = async () => {
@@ -95,7 +118,7 @@ const TicketsOpen = () => {
 
 
   const selectQtde = (qtde: number) => {
-    setItemPage(qtde);
+    setConfig(qtde.toString());
   };
 
   // Alterna seleção da prioridade
@@ -153,6 +176,7 @@ const TicketsOpen = () => {
     setFilteredTickets(filtrados);
     setCurrentPage(1);
     setShowFilter(false);
+
     // Ordenação
     if (ordenacao === "mais_novo") {
       filtrados.sort(
@@ -208,14 +232,19 @@ const TicketsOpen = () => {
               </div>
               {/*Filtro */}
               <div
-                onClick={() => setShowFilter(!showFilter)}
+                onClick={(e) => {
+                  e.stopPropagation(); // Impede que o clique suba para o 'document'
+                  setShowFilter(!showFilter);
+                }}
                 className="relative flex flex-row items-center gap-2 cursor-pointer"
               >
                 <span className="font-semibold">Filtro</span>
                 <Filter size={20} />
 
                 {showFilter && (
-                  <div className="absolute left-0 top-full mt-2 w-36 sm:w-48 md:w-56 lg:w-64 bg-white border border-gray-500 rounded shadow-lg z-[999] p-3">
+                  <div ref={dropdownRef} 
+                       onClick={(e) => e.stopPropagation()}
+                       className="absolute left-0 top-full mt-2 w-36 sm:w-48 md:w-56 lg:w-64 bg-white border border-gray-500 rounded shadow-lg z-[999] p-3">
                     <form className="flex flex-col gap-2 text-sm text-gray-700">
                       {[
                         "Prioridade Baixa",
@@ -251,8 +280,8 @@ const TicketsOpen = () => {
               <span
                 onClick={() => setFiltroAtivo("todos")}
                 className={`py-2 cursor-pointer ${filtroAtivo === "todos"
-                    ? "text-background border-b border-b-background"
-                    : ""
+                  ? "text-background border-b border-b-background"
+                  : ""
                   }`}
               >
                 Todos os tickets ({tickets.length})
@@ -260,8 +289,8 @@ const TicketsOpen = () => {
               <span
                 onClick={() => setFiltroAtivo("hoje")}
                 className={`py-2 cursor-pointer ${filtroAtivo === "hoje"
-                    ? "text-background border-b border-b-background"
-                    : ""
+                  ? "text-background border-b border-b-background"
+                  : ""
                   }`}
               >
                 Hoje (
@@ -277,8 +306,8 @@ const TicketsOpen = () => {
               <span
                 onClick={() => setFiltroAtivo("meus")}
                 className={`py-2 cursor-pointer ${filtroAtivo === "meus"
-                    ? "text-background border-b border-b-background"
-                    : ""
+                  ? "text-background border-b border-b-background"
+                  : ""
                   }`}
               >
                 Atribuidos a mim (
@@ -291,8 +320,8 @@ const TicketsOpen = () => {
               <span
                 onClick={() => setFiltroAtivo("outros")}
                 className={`py-2 cursor-pointer ${filtroAtivo === "outros"
-                    ? "text-background border-b border-b-background"
-                    : ""
+                  ? "text-background border-b border-b-background"
+                  : ""
                   }`}
               >
                 Atribuidos a outros (
@@ -308,13 +337,14 @@ const TicketsOpen = () => {
               <span
                 onClick={() => setFiltroAtivo("nao_atribuidos")}
                 className={`py-2 cursor-pointer ${filtroAtivo === "nao_atribuidos"
-                    ? "text-background border-b border-b-background"
-                    : ""
+                  ? "text-background border-b border-b-background"
+                  : ""
                   }`}
               >
                 Não atribuidos (
                 {tickets.filter((ticket) => !ticket.atribuido_a).length})
               </span>
+
               <div className={`flex items-center  py-2 cursor-pointer`}>
                 <span className="text-sm">Ordenar:</span>
                 <select
@@ -327,6 +357,7 @@ const TicketsOpen = () => {
                   <option value="mais_antigo">Do mais antigo</option>
                 </select>
               </div>
+
             </div>
 
             {/*Tabela */}
@@ -386,12 +417,12 @@ const TicketsOpen = () => {
                       <td className="py-3  border-b border-b-[#ddd] w-[20%] whitespace-nowrap overflow-hidden text-ellipsis">
                         <span
                           className={`px-2 py-1 border ${ticket.nivel_prioridade === "Prioridade Baixa"
-                              ? "bg-[#cdf8c7]  border-[#1EFF00]"
-                              : ticket.nivel_prioridade === "Prioridade Média"
-                                ? "bg-[#ffffcf]  border-[#b1b126]"
-                                : ticket.nivel_prioridade === "Prioridade Alta"
-                                  ? "bg-[#ffcfcf]  border-[#FF0000]"
-                                  : "border-none"
+                            ? "bg-[#cdf8c7]  border-[#1EFF00]"
+                            : ticket.nivel_prioridade === "Prioridade Média"
+                              ? "bg-[#ffffcf]  border-[#b1b126]"
+                              : ticket.nivel_prioridade === "Prioridade Alta"
+                                ? "bg-[#ffcfcf]  border-[#FF0000]"
+                                : "border-none"
                             }  rounded`}
                         >
                           {ticket.nivel_prioridade.replace("Prioridade", "") ||
@@ -443,6 +474,7 @@ const TicketsOpen = () => {
                 <span>Exibir</span>
                 <select
                   onChange={(event) => selectQtde(Number(event.target.value))}
+                  value={parseInt(config || "5")}
                   className="p-1 border border-[#B3B7BC] outline-none rounded"
                 >
                   <option value={5}>5</option>
@@ -466,18 +498,18 @@ const TicketsOpen = () => {
 
                 <span>
                   Página {currentPage} de{" "}
-                  {Math.max(1, Math.ceil(filteredTickets.length / itemPage))}
+                  {Math.max(1, Math.ceil(filteredTickets.length / parseInt(config || "5")))}
                 </span>
 
                 <SquareArrowRight
-                  className={`cursor-pointer ${currentPage >= Math.ceil(filteredTickets.length / itemPage)
-                      ? "opacity-50 cursor-not-allowed"
-                      : ""
+                  className={`cursor-pointer ${currentPage >= Math.ceil(filteredTickets.length / parseInt(config || "5"))
+                    ? "opacity-50 cursor-not-allowed"
+                    : ""
                     }`}
                   size={25}
                   onClick={() => {
                     const totalPages = Math.ceil(
-                      filteredTickets.length / itemPage
+                      filteredTickets.length / parseInt(config || "5")
                     );
                     if (currentPage < totalPages) {
                       setCurrentPage((prev) => prev + 1);
