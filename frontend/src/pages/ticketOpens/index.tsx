@@ -20,7 +20,7 @@ import { getUserData } from "../../utils/getUser";
 import { useConfig } from "../../utils/configContext";
 
 const TicketsOpen = () => {
-  const [filtroAtivo, setFiltroAtivo] = useState<string>("todos");
+  const [filtroAtivo, setFiltroAtivo] = useState<string>("meus");
   const [filtroPrioridade, setFiltroPrioridade] = useState<string[]>([]);
   const [tickets, setTickets] = useState<TicketView[]>([]);
   const [filteredTickets, setFilteredTickets] = useState<TicketView[]>([]);
