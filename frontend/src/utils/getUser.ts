@@ -8,6 +8,7 @@ interface UserData {
   nome_completo: string;
   exp?: number;
   iat?: number;
+  
 }
 
 export const getUserData = (): UserData | null => {
