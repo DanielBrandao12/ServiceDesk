@@ -27,16 +27,20 @@ export const handleLogin = async (
       return res.status(401).json({ message: "E-mail ou senha incorretos" });
     }
 
+    if(!usuario.situacao){
+       return res.status(401).json({ message: "Usuário inativo!" });
+    }
+
     const senhaCorreta = await bcrypt.compare(senha, usuario.senha_hash);
 
     if (!senhaCorreta) {
       return res.status(401).json({ message: "E-mail ou senha incorretos" });
     }
 
-    const { id_usuario, nome_completo } = usuario;
+    const { id_usuario, nome_completo, perfil} = usuario;
 
     const token = jwt.sign(
-      { id: id_usuario, nome_usuario, nome_completo },
+      { id: id_usuario, nome_usuario, nome_completo, perfil },
       jwtKey,
       { expiresIn: "1h" }
     );
@@ -52,6 +56,7 @@ export const handleLogin = async (
       id_usuario,
       nome_usuario,
       nome_completo,
+      
     };
 
     //const { senha_hash: _, ...usuarioSemSenha } = usuario.toJSON();

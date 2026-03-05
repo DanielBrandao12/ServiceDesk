@@ -35,6 +35,7 @@ export interface Usuarios {
     senha_hash: string;
     nome_usuario: string;
     perfil: string;
+    situacao: boolean;
 }
 
 

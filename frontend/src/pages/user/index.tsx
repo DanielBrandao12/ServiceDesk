@@ -13,7 +13,7 @@ import { getUserData } from "../../utils/getUser";
 
 
 export const UserView = () => {
-    const titulosTabela = ["ID", "Nome", "Email", "Nome usuário", "Perfil", "Editar"];
+    const titulosTabela = ["ID", "Nome", "Email", "Nome usuário", "Perfil", "Situação", "Editar"];
 
     const [listUsers, setListUsers] = useState<Usuarios[]>([]);
     const [listUsersPaginados, setListUsersPaginados] = useState<Usuarios[]>([]);
@@ -26,6 +26,7 @@ export const UserView = () => {
     const listarUsuarios = async () => {
         try {
             const res = await chamadasUsers.listarUsuarios();
+            
             setListUsers(res);
            
         } catch (err) {
@@ -86,6 +87,9 @@ export const UserView = () => {
                         </td>
                         <td className="py-3  border-b border-b-[#ddd] w-[20%] whitespace-nowrap overflow-hidden text-ellipsis">
                             {value.perfil}
+                        </td>
+                        <td className="py-3  border-b border-b-[#ddd] w-[20%] whitespace-nowrap overflow-hidden text-ellipsis">
+                            {value.situacao ? "Ativo" : "Inativo" }
                         </td>
                         <td
                             onClick={() => value.id_usuario === user.id && handleEdit(value)}

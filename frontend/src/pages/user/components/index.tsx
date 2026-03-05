@@ -24,12 +24,13 @@ export const ModalFormUser = ({
   useEffect(() => {
     if (modo === "criar") {
       setDadosEditados({
-        nome: "",
+        nome_completo: "",
         email: "",
         nome_usuario: "",
         perfil: "comum",
         senha: "",
         confirmarSenha: "",
+        situacao: null,
       });
     } else {
       setDadosEditados({
@@ -41,11 +42,11 @@ export const ModalFormUser = ({
   }, [dados, modo]);
 
   const handleSave = () => {
-    if (!dadosEditados.nome_completo || !dadosEditados.email || !dadosEditados.nome_usuario || !dadosEditados.perfil) {
+    if (!dadosEditados.nome_completo || !dadosEditados.email || !dadosEditados.nome_usuario || !dadosEditados.perfil || dadosEditados.situacao === undefined) {
       setError("Preencha todos os campos obrigatórios");
       return;
     }
-if (modo === "criar" && !dadosEditados.senha) {
+    if (modo === "criar" && !dadosEditados.senha) {
       setError("A senha é obrigatória para novos usuários.");
       return;
     }
@@ -121,7 +122,7 @@ if (modo === "criar" && !dadosEditados.senha) {
                 className="border border-gray-300 rounded px-2 py-1 outline-none"
               />
             </div>
-             {/* Senha */}
+            {/* Senha */}
             <div className="flex flex-col gap-2">
               <label className="text-sm font-semibold text-gray-600">Senha</label>
               <input
@@ -174,7 +175,29 @@ if (modo === "criar" && !dadosEditados.senha) {
               </select>
             </div>
 
-          
+            {/* Campo Situação */}
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-semibold text-gray-600">Situação</label>
+              <select
+                name="situacao"
+                value={dadosEditados?.situacao === true
+                  ? "Ativo"
+                  : dadosEditados?.situacao === false
+                    ? "Inativo"
+                    : ""}
+                onChange={(e) =>
+                  setDadosEditados((prev: any) => ({ ...prev, situacao: e.target.value === "Ativo" ? true : false }))
+                }
+                className="border border-gray-300 rounded px-2 py-1 outline-none cursor-pointer"
+              >
+                <option value="">Selecione um perfil</option>
+                <option value="Ativo">Ativo</option>
+                <option value="Inativo">Inativo</option>
+
+              </select>
+            </div>
+
+
             {error && <span className="text-primary text-sm">{error}</span>}
 
             <button

@@ -4,6 +4,7 @@ import type { Usuarios } from "../types";
 
 export const chamadasUsers = {
     criarUsuario: async (dadosUser: Omit<Usuarios, "id_usuario">) : Promise<Usuarios> =>{
+        console.log(dadosUser)
         const response = await api.post<Usuarios>("/usuarios/createUser", dadosUser)
         return response.data
     },
