@@ -13,6 +13,8 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import { chamadaLogin } from "../../services/endpoints/login";
 import Alert from "../alert";
+import { temPermissao } from "../../utils/verificaPermissao";
+import { getUserData } from "../../utils/getUser";
 
 interface MenuProps {
   expandeMenu: boolean;
@@ -22,6 +24,7 @@ interface MenuProps {
 const Menu = ({ expandeMenu, setExpandeMenu }: MenuProps) => {
 
   const navigate = useNavigate();
+  const user: any = getUserData();
 
   const [submenuAberto, setSubmenuAberto] = useState(false);
 
@@ -139,8 +142,9 @@ const Menu = ({ expandeMenu, setExpandeMenu }: MenuProps) => {
             <ChartPie className="text-white group-hover:scale-110 transition-transform" size={25} onClick={setExpandeMenu} />
             {expandeMenu && <Link className="text-white hidden sm:inline" to={"/Status"}>Status</Link>}
           </div>
-
-          <div
+{
+   temPermissao(user, "gerenciarUsuarios") && (
+  <div
             className={`
           group cursor-pointer flex items-center gap-3 w-4/6 rounded p-2 
           transition-all duration-200
@@ -152,6 +156,9 @@ const Menu = ({ expandeMenu, setExpandeMenu }: MenuProps) => {
             <UsersRound className="text-white group-hover:scale-110 transition-transform" size={25} onClick={setExpandeMenu} />
             {expandeMenu && <Link className="text-white hidden sm:inline" to={"/Usuarios"}>Usuários</Link>}
           </div>
+   )
+}
+   
 
           {
             /*

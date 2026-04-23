@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import {  SquareArrowLeft, SquareArrowRight } from "lucide-react";
 import Card from "../card/card";
+import { temPermissao } from "../../utils/verificaPermissao";
+import { getUserData } from "../../utils/getUser";
 
 
 interface tableProps {
@@ -28,6 +30,7 @@ export const Table = ({
   const indexInicio = (currentPage - 1) * itemPage;
   const indexFim = indexInicio + itemPage;
   const dadosPaginados = dados.slice(indexInicio, indexFim);
+    const user: any = getUserData();
 
   // Atualiza o pai só quando a página ou os dados mudarem
   useEffect(() => {
@@ -47,7 +50,12 @@ export const Table = ({
       <Card>
         <div className="flex flex-col">
           <div className="flex mb-10"> 
-                  <button className="bg-theadColor p-2 text-white rounded-md px-4 text-sm" onClick={onCreate} >{titleButton}</button>
+            {
+              temPermissao(user, "criarUsuario" ) && (
+                <button className="bg-theadColor p-2 text-white rounded-md px-4 text-sm" onClick={onCreate} >{titleButton}</button>
+              )
+            }
+                 
           </div>
 
           {/*Tabela */}

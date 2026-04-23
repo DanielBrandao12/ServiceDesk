@@ -8,6 +8,7 @@ import { chamadasAnexo } from "../../../services/endpoints/anexo";
 import { downloadAnexo } from "../../../utils/downloadAnexo";
 
 import { getUserData } from "../../../utils/getUser";
+import { temPermissao } from "../../../utils/verificaPermissao";
 
 
 interface mensagensProps {
@@ -284,64 +285,76 @@ export const Mensagens = ({ onClose, mensagens, codigoTicket, id_ticket, remeten
 
         {/* Área de envio */}
         <div className="border-t bg-gray-50 p-4 flex flex-col gap-3">
-          <textarea
-            className="w-full border rounded-lg p-3 resize-none focus:ring-2 focus:ring-primary focus:outline-none text-sm"
-            placeholder="Digite sua mensagem..."
-            rows={3}
-            value={conteudo}
-            onChange={(e) => setConteudo(e.target.value)}
-            onFocus={() => setError('')}
-          ></textarea>
+          {
+            temPermissao(user, "enviarMensagem") && (
+
+              <textarea
+                className="w-full border rounded-lg p-3 resize-none focus:ring-2 focus:ring-primary focus:outline-none text-sm"
+                placeholder="Digite sua mensagem..."
+                rows={3}
+                value={conteudo}
+                onChange={(e) => setConteudo(e.target.value)}
+                onFocus={() => setError('')}
+              ></textarea>
+            )
+
+          }
           {error && <span className="text-xs text-red-700">{error}</span>}
+          {
+            temPermissao(user, "enviarMensagem") && (
 
-          <div className="flex justify-between items-center">
-            <div className="flex gap-2">
-              <label
-                htmlFor="inputAnexo"
-                className="text-sm px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 transition cursor-pointer"
-              >
-                Anexar arquivos
-              </label>
+              <div className="flex justify-between items-center">
+                <div className="flex gap-2">
+                  <label
+                    htmlFor="inputAnexo"
+                    className="text-sm px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 transition cursor-pointer"
+                  >
+                    Anexar arquivos
+                  </label>
 
-              <input
-                id="inputAnexo"
-                type="file"
-                multiple
-                className="hidden"
-                onChange={(e) => {
-                  const files = e.target.files ? Array.from(e.target.files) : [];
-                  if (files.length > 0) {
-                    setArquivos((prev) => [...prev, ...files]); // adiciona sem substituir
-                    console.log("Arquivos selecionados:", files);
-                  }
-                }}
-              />
-              {arquivos.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {arquivos.map((file, i) => (
-                    <div
-                      key={i}
-                      className="flex items-center gap-1 bg-gray-100 border px-2 py-1 rounded text-xs"
-                    >
-                      <span className="truncate max-w-[150px]">{file.name}</span>
-                      <button
-                        onClick={() => removerArquivo(i)}
-                        className="text-red-600 hover:text-red-800"
-                        title="Remover arquivo"
-                      >
-                        <X size={14} />
-                      </button>
+                  <input
+                    id="inputAnexo"
+                    type="file"
+                    multiple
+                    className="hidden"
+                    onChange={(e) => {
+                      const files = e.target.files ? Array.from(e.target.files) : [];
+                      if (files.length > 0) {
+                        setArquivos((prev) => [...prev, ...files]); // adiciona sem substituir
+                        console.log("Arquivos selecionados:", files);
+                      }
+                    }}
+                  />
+                  {arquivos.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {arquivos.map((file, i) => (
+                        <div
+                          key={i}
+                          className="flex items-center gap-1 bg-gray-100 border px-2 py-1 rounded text-xs"
+                        >
+                          <span className="truncate max-w-[150px]">{file.name}</span>
+                          <button
+                            onClick={() => removerArquivo(i)}
+                            className="text-red-600 hover:text-red-800"
+                            title="Remover arquivo"
+                          >
+                            <X size={14} />
+                          </button>
+                        </div>
+                      ))}
                     </div>
-                  ))}
+                  )}
                 </div>
-              )}
-            </div>
-            <div>
-              <button onClick={criarResposta} className="text-sm px-5 py-2 rounded-lg bg-primary text-white font-semibold hover:bg-primary/90 transition">
-                Enviar
-              </button>
-            </div>
-          </div>
+
+                <div>
+                  <button onClick={criarResposta} className="text-sm px-5 py-2 rounded-lg bg-primary text-white font-semibold hover:bg-primary/90 transition">
+                    Enviar
+                  </button>
+                </div>
+              </div>
+            )
+
+          }
         </div>
       </div>
     </div>

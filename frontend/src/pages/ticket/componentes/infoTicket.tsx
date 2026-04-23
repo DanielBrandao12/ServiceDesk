@@ -29,6 +29,8 @@ import type {
 import { formatarDataHora } from "../../../utils/dateHour";
 import { ChamadasTickets } from "../../../services/endpoints/tickets";
 import Alert from "../../../components/alert";
+import { temPermissao } from "../../../utils/verificaPermissao";
+import { getUserData } from "../../../utils/getUser";
 
 
 interface TicketProps {
@@ -64,7 +66,8 @@ export const InfoTicket: React.FC<TicketProps> = ({
 
   const listPrioridade: string[] = ["Prioridade Baixa", "Prioridade Média", "Prioridade Alta"]
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  const user: any = getUserData();
 
   useEffect(() => {
     chamadasCategoria.listarCategorias().then((res) => {
@@ -185,21 +188,29 @@ export const InfoTicket: React.FC<TicketProps> = ({
             <span className="font-medium">{tecnico[0]?.nome_usuario}</span>
           </div>
           <div className="flex  justify-between px-2">
-            <div className="flex items-center gap-1 mt-5">
-              <Edit2 size={14} color="#BD2626" />
-              <button
-                onClick={() => setEdit(!edit)}
-                className="text-sm font-bold text-[#BD2626] hover:underline"
-              >
-                Editar
-              </button>
-            </div>
-            <div className="flex items-center gap-1 mt-5">
-              <Trash2 size={14} color="#BD2626" />
-              <button onClick={handleDeleteClick} className="text-sm font-bold text-[#BD2626] hover:underline">
-                Excluir
-              </button>
-            </div>
+            {
+              temPermissao(user, "editarChamado") && (
+                <div className="flex items-center gap-1 mt-5">
+                  <Edit2 size={14} color="#BD2626" />
+                  <button
+                    onClick={() => setEdit(!edit)}
+                    className="text-sm font-bold text-[#BD2626] hover:underline"
+                  >
+                    Editar
+                  </button>
+                </div>
+              )
+            }
+            {
+              temPermissao(user, "excluirChamado") && (
+                <div className="flex items-center gap-1 mt-5">
+                  <Trash2 size={14} color="#BD2626" />
+                  <button onClick={handleDeleteClick} className="text-sm font-bold text-[#BD2626] hover:underline">
+                    Excluir
+                  </button>
+                </div>
+              )
+            }
             <div className="flex items-center gap-1 mt-5">
               <Printer size={14} color="#BD2626" />
               <button onClick={handlePrint} className="text-sm font-bold text-[#BD2626] hover:underline">

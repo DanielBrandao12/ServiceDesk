@@ -28,6 +28,7 @@ export const Login: React.FC = () => {
 
       // Faz a requisição ao backend
       const response = await chamadaLogin.handleLogin(dadosLogin);
+
   
       const token: string = response.token;
  
@@ -36,9 +37,9 @@ export const Login: React.FC = () => {
 
       // Redireciona após login
       navigate("/");
-    } catch (err) {
-      console.error("Login failed:", err);
-      setError("Credenciais inválidas");
+    } catch (err: any) {
+      
+      setError(err.response?.data?.message);
       setSenha("");
     }
   };

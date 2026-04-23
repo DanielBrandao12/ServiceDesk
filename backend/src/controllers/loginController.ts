@@ -15,7 +15,7 @@ export const handleLogin = async (
   res: Response
 ): Promise<Response | any> => {
   
-  const { nome_usuario, senha } = req.body //|| {nome_usuario:'Daniel', senha:'ftcbp183'};
+  const { nome_usuario, senha } = req.body ;
   if (!senha) {
     return res.status(400).json({ message: "Senha é obrigatória" });
   }

@@ -2,6 +2,9 @@ import { X } from "lucide-react";
 import Card from "../../../components/card/card";
 import { useEffect, useState } from "react";
 
+import { getUserData } from "../../../utils/getUser";
+import { temPermissao } from "../../../utils/verificaPermissao";
+
 interface ModalFormUserProps {
   setShowEdit: () => void;
   title: string;
@@ -20,6 +23,7 @@ export const ModalFormUser = ({
   const [dadosEditados, setDadosEditados] = useState<any | null>(dados);
   const [error, setError] = useState<string>("");
 
+  const user: any = getUserData();
   // Valores padrão no modo de criação
   useEffect(() => {
     if (modo === "criar") {
@@ -27,7 +31,7 @@ export const ModalFormUser = ({
         nome_completo: "",
         email: "",
         nome_usuario: "",
-        perfil: "comum",
+        perfil: "",
         senha: "",
         confirmarSenha: "",
         situacao: null,
@@ -94,34 +98,44 @@ export const ModalFormUser = ({
             </div>
 
             {/* Campo Email */}
-            <div className="flex flex-col gap-2">
-              <label className="text-sm font-semibold text-gray-600">Email</label>
-              <input
-                type="email"
-                name="email"
-                value={dadosEditados?.email || ""}
-                onChange={(e) =>
-                  setDadosEditados((prev: any) => ({ ...prev, email: e.target.value }))
-                }
-                onFocus={() => setError("")}
-                className="border border-gray-300 rounded px-2 py-1 outline-none"
-              />
-            </div>
+            {
+              modo === "criar" && (
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm font-semibold text-gray-600">Email</label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={dadosEditados?.email || ""}
+                    onChange={(e) =>
+                      setDadosEditados((prev: any) => ({ ...prev, email: e.target.value }))
+                    }
+                    onFocus={() => setError("")}
+                    className="border border-gray-300 rounded px-2 py-1 outline-none"
+                  />
+                </div>
+              )
+            }
+
 
             {/* Campo Nome de Usuário */}
-            <div className="flex flex-col gap-2">
-              <label className="text-sm font-semibold text-gray-600">Nome de Usuário</label>
-              <input
-                type="text"
-                name="usuario"
-                value={dadosEditados?.nome_usuario || ""}
-                onChange={(e) =>
-                  setDadosEditados((prev: any) => ({ ...prev, nome_usuario: e.target.value }))
-                }
-                onFocus={() => setError("")}
-                className="border border-gray-300 rounded px-2 py-1 outline-none"
-              />
-            </div>
+            {
+              modo === "criar" && (
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm font-semibold text-gray-600">Nome de Usuário</label>
+                  <input
+                    type="text"
+                    name="usuario"
+                    value={dadosEditados?.nome_usuario || ""}
+                    onChange={(e) =>
+                      setDadosEditados((prev: any) => ({ ...prev, nome_usuario: e.target.value }))
+                    }
+                    onFocus={() => setError("")}
+                    className="border border-gray-300 rounded px-2 py-1 outline-none"
+                  />
+                </div>
+              )
+            }
+
             {/* Senha */}
             <div className="flex flex-col gap-2">
               <label className="text-sm font-semibold text-gray-600">Senha</label>
@@ -156,46 +170,53 @@ export const ModalFormUser = ({
             {/* Erro */}
             {error && <span className="text-primary text-sm">{error}</span>}
 
-            {/* Campo Perfil */}
-            <div className="flex flex-col gap-2">
-              <label className="text-sm font-semibold text-gray-600">Perfil</label>
-              <select
-                name="perfil"
-                value={dadosEditados?.perfil || ""}
-                onChange={(e) =>
-                  setDadosEditados((prev: any) => ({ ...prev, perfil: e.target.value }))
-                }
-                className="border border-gray-300 rounded px-2 py-1 outline-none cursor-pointer"
-              >
-                <option value="">Selecione um perfil</option>
-                <option value="Administrador">Administrador</option>
-                <option value="Gerente">Gerente</option>
-                <option value="Atendente">Atendente</option>
-                <option value="Usuário">Usuário</option>
-              </select>
-            </div>
+            {
+              temPermissao(user, "editarUsuario") && (
+                <div>
+                  {/* Campo Perfil */}
+                  <div className="flex flex-col gap-2">
+                    <label className="text-sm font-semibold text-gray-600">Perfil</label>
+                    <select
+                      name="perfil"
+                      value={dadosEditados?.perfil || ""}
+                      onChange={(e) =>
+                        setDadosEditados((prev: any) => ({ ...prev, perfil: e.target.value }))
+                      }
+                      className="border border-gray-300 rounded px-2 py-1 outline-none cursor-pointer"
+                    >
+                      <option value="">Selecione um perfil</option>
+                      <option value="admin">Administrador</option>
+                      <option value="gerente">Gerente</option>
+                      <option value="tecnico">Técnico</option>
+                      <option value="usuario">Usuário</option>
+                    </select>
+                  </div>
+                  {/* Campo Situação */}
+                  <div className="flex flex-col gap-2">
+                    <label className="text-sm font-semibold text-gray-600">Situação</label>
+                    <select
+                      name="situacao"
+                      value={dadosEditados?.situacao === true
+                        ? "Ativo"
+                        : dadosEditados?.situacao === false
+                          ? "Inativo"
+                          : ""}
+                      onChange={(e) =>
+                        setDadosEditados((prev: any) => ({ ...prev, situacao: e.target.value === "Ativo" ? true : false }))
+                      }
+                      className="border border-gray-300 rounded px-2 py-1 outline-none cursor-pointer"
+                    >
+                      <option value="">Selecione um perfil</option>
+                      <option value="Ativo">Ativo</option>
+                      <option value="Inativo">Inativo</option>
 
-            {/* Campo Situação */}
-            <div className="flex flex-col gap-2">
-              <label className="text-sm font-semibold text-gray-600">Situação</label>
-              <select
-                name="situacao"
-                value={dadosEditados?.situacao === true
-                  ? "Ativo"
-                  : dadosEditados?.situacao === false
-                    ? "Inativo"
-                    : ""}
-                onChange={(e) =>
-                  setDadosEditados((prev: any) => ({ ...prev, situacao: e.target.value === "Ativo" ? true : false }))
-                }
-                className="border border-gray-300 rounded px-2 py-1 outline-none cursor-pointer"
-              >
-                <option value="">Selecione um perfil</option>
-                <option value="Ativo">Ativo</option>
-                <option value="Inativo">Inativo</option>
+                    </select>
+                  </div>
+                </div>
+              )
+            }
 
-              </select>
-            </div>
+
 
 
             {error && <span className="text-primary text-sm">{error}</span>}

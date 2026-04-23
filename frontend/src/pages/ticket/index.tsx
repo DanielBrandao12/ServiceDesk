@@ -18,6 +18,8 @@ import { Mensagens } from "./componentes/mensagens";
 import { downloadAnexo } from "../../utils/downloadAnexo";
 import { chamadasAnotacoes } from "../../services/endpoints/anotacao";
 import { Anotacoes } from "./componentes/anotações";
+import { temPermissao } from "../../utils/verificaPermissao";
+import { getUserData } from "../../utils/getUser";
 
 const Ticket = () => {
 
@@ -32,6 +34,8 @@ const Ticket = () => {
   const [showMessage, setShowMessage] = useState<boolean>(false);
   const [showAnotacao, setShowAntoacao] = useState<boolean>(false);
   const [anotacoes, setAnotacoes] = useState<Anotacao[]>([]);
+
+  const user: any = getUserData();
 
   const carregarTicket = async () => {
     try {
@@ -59,7 +63,7 @@ const Ticket = () => {
       const res = await chamadasAnotacoes.listarAnotacoes(idTicketNumber)
 
       setAnotacoes(res);
-  
+
     } catch (err) {
       console.error("Erro ao anotações:", err);
     }
@@ -142,7 +146,7 @@ const Ticket = () => {
                 </span>
               </div>
 
-                {/* Conteúdo do Ticket */}
+              {/* Conteúdo do Ticket */}
               <div className="flex flex-col gap-6 p-5">
                 <div className="flex flex-col gap-2">
                   <h2 className="text-2xl font-bold text-black">
@@ -204,6 +208,7 @@ const Ticket = () => {
                     /*Mensagens */
                     <div>
                       {
+
                         ticket?.respostas.length > 0 ? (
                           <div>
                             <div className="mt-4 p-4 bg-white border rounded-lg shadow-sm">
@@ -228,21 +233,36 @@ const Ticket = () => {
                                 }}
                               />
                             </div>
-                            <div className="flex justify-end mt-4 p-4">
-                              <button onClick={() => setShowMessage(true)} className="text-sm font-medium text-[#BD2626] hover:underline">
-                                Ver todas
-                              </button>
-                            </div>
+                            {
+                              temPermissao(user, "verMensagens") && (
+                                <div className="flex justify-end mt-4 p-4">
+                                  <button onClick={() => setShowMessage(true)} className="text-sm font-medium text-[#BD2626] hover:underline">
+                                    Ver todas
+                                  </button>
+                                </div>
+                              )
+                            }
+
                           </div>
                         ) : (
                           <div className="mt-6">
 
                             <span>Não existe mensagens</span>
-                            <div className="flex justify-end mt-4 p-4">
-                              <button onClick={() => setShowMessage(true)} className="text-sm font-medium text-[#BD2626] hover:underline">
-                                Enviar mensagem
-                              </button>
-                            </div>
+                            {
+                              temPermissao(user, "verMensagens") && (
+                                <div className="flex justify-end mt-4 p-4">
+
+                                  {
+                                    user.perfil === "usuario" ? (<button onClick={() => setShowMessage(true)} className="text-sm font-medium text-[#BD2626] hover:underline">
+                                      Ver todas
+                                    </button>) : (
+                                      <button onClick={() => setShowMessage(true)} className="text-sm font-medium text-[#BD2626] hover:underline">
+                                        Enviar mensagem
+                                      </button>
+                                    )
+                                  }
+                                </div>
+                              )}
                           </div>
                         )
                       }
@@ -302,7 +322,7 @@ const Ticket = () => {
 
             {/*Card de informações do ticket */}
             <InfoTicket ticket={ticket} setLoadTicket={() => setLoadTicket(!loadTicket)} handlePrint={handlePrint} />
-            
+
             {/*Card do histórico da alteração de status do ticket */}
             <Card className="h-40 ">
               <div className="flex items-center  justify-between py-4 text-xl font-bold ">
@@ -340,7 +360,7 @@ const Ticket = () => {
 
         </div>
 
-        
+
         {/*Modal mensagens */}
         {
           showMessage && (
@@ -358,7 +378,7 @@ const Ticket = () => {
         }
 
 
-         {/*Modal anotações */}
+        {/*Modal anotações */}
         {
           showAnotacao && (
             <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">

@@ -10,6 +10,7 @@ import Alert from "../../components/alert";
 import { chamadasUsers } from "../../services/endpoints/users";
 import { ModalFormUser } from "./components";
 import { getUserData } from "../../utils/getUser";
+import { temPermissao } from "../../utils/verificaPermissao";
 
 
 export const UserView = () => {
@@ -26,9 +27,9 @@ export const UserView = () => {
     const listarUsuarios = async () => {
         try {
             const res = await chamadasUsers.listarUsuarios();
-            
+
             setListUsers(res);
-           
+
         } catch (err) {
             console.error("Erro ao buscar lista de usuários", err);
         }
@@ -89,12 +90,12 @@ export const UserView = () => {
                             {value.perfil}
                         </td>
                         <td className="py-3  border-b border-b-[#ddd] w-[20%] whitespace-nowrap overflow-hidden text-ellipsis">
-                            {value.situacao ? "Ativo" : "Inativo" }
+                            {value.situacao ? "Ativo" : "Inativo"}
                         </td>
                         <td
-                            onClick={() => value.id_usuario === user.id && handleEdit(value)}
+                            onClick={() => value.id_usuario === user.id && handleEdit(value) || temPermissao(user, "editarUsuario") && handleEdit(value)}
                             className={`py-3 border-b border-b-[#ddd] w-[20%] whitespace-nowrap overflow-hidden text-ellipsis cursor-pointer
-                                ${value.id_usuario !== user.id ? "opacity-50 cursor-not-allowed" : ""}
+                                ${(value.id_usuario !== user.id ? "" : "opacity-50 cursor-not-allowed") || temPermissao(user, "editarUsuario") ? "" : "opacity-50 cursor-not-allowed"}
                             `}
                         >
                             <div className="flex justify-center items-center">

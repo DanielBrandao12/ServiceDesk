@@ -19,7 +19,7 @@ export const enviarRespostaAutomatica = async (
     if (!process.env.EMAIL_USER) {
       throw new Error("EMAIL_USER não está definido nas variáveis de ambiente.");
     }
-    console.log(anexos)
+    
     await transporter.sendMail({
       from: process.env.EMAIL_USER,
       to: remetente,
@@ -131,8 +131,12 @@ export const checkEmails = async () => {
     console.error("Erro ao verificar e-mails:", error);
   } finally {
     if (connection) {
+       try {
       await connection.logout();
       console.log("Conexão IMAP encerrada com sucesso!");
+    } catch (logoutError) {
+      console.error("Erro ao encerrar conexão IMAP:", logoutError);
+    }
     }
   }
 };
