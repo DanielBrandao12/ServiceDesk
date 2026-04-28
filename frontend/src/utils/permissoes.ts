@@ -13,6 +13,7 @@ export const permissoes = {
         verAnotacoes: true,
         criarUsuario: true,
         editarUsuario: true,
+        changeAdmin: true
     },
     gerente: {
 
@@ -29,6 +30,7 @@ export const permissoes = {
         verAnotacoes: true,
         criarUsuario: true,
         editarUsuario: false,
+         changeAdmin: false
     },
     tecnico: {
         verTodosChamados: true,
@@ -44,6 +46,7 @@ export const permissoes = {
         verAnotacoes: true,
         criarUsuario: false,
         editarUsuario: false,
+         changeAdmin: false
     },
     usuario: {
         verTodosChamados: true,
@@ -59,5 +62,6 @@ export const permissoes = {
         verAnotacoes: true,
         criarUsuario: false,
         editarUsuario: false,
+         changeAdmin: false
     }
 }

@@ -171,7 +171,7 @@ export const ModalFormUser = ({
             {error && <span className="text-primary text-sm">{error}</span>}
 
             {
-              temPermissao(user, "editarUsuario") && (
+              temPermissao(user, "criarUsuario") && (
                 <div>
                   {/* Campo Perfil */}
                   <div className="flex flex-col gap-2">
@@ -185,7 +185,7 @@ export const ModalFormUser = ({
                       className="border border-gray-300 rounded px-2 py-1 outline-none cursor-pointer"
                     >
                       <option value="">Selecione um perfil</option>
-                      <option value="admin">Administrador</option>
+                      {  temPermissao(user, "changeAdmin") && (<option value="admin">Administrador</option>)}
                       <option value="gerente">Gerente</option>
                       <option value="tecnico">Técnico</option>
                       <option value="usuario">Usuário</option>
