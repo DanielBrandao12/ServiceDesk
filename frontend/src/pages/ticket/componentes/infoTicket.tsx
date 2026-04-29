@@ -72,6 +72,7 @@ export const InfoTicket: React.FC<TicketProps> = ({
   useEffect(() => {
     chamadasCategoria.listarCategorias().then((res) => {
       setCategorias(res);
+
       const categoriaEncontrada = res.filter(
         (item) => ticket?.ticket.id_categoria === item.id_categoria
       );
@@ -80,6 +81,7 @@ export const InfoTicket: React.FC<TicketProps> = ({
 
     chamadasStatus.listarStatus().then((res) => {
       setStatusList(res);
+
       const statusEncontrado = res.filter(
         (item) => ticket?.ticket.id_status === item.id_status
       );
@@ -96,17 +98,20 @@ export const InfoTicket: React.FC<TicketProps> = ({
       setTecnico(tecnicoEncontrado);
     });
 
+    // 👇 aqui mantém vazio se não tiver
+    setPrioridade(ticket?.ticket.nivel_prioridade || "");
 
+    //  NÃO seta idStatus, idCategoria, idTecnico aqui
 
   }, [ticket]);
 
   const salvarEdicao = async () => {
     const dados: any = {
       id_ticket: ticket?.ticket.id_ticket,
-      id_status: idStatus ?? ticket?.ticket.id_status, // usa o novo valor se existir, senão mantém o original
-      atribuido_a: idTecnico ?? parseInt(ticket?.ticket.atribuido_a),
-      nivel_prioridade: prioridade || ticket?.ticket.nivel_prioridade,
-      id_categoria: idCategoria ?? ticket?.ticket.id_categoria,
+      id_status: idStatus ?? statusList[0]?.id_status,
+      atribuido_a: idTecnico ?? usuarios[0]?.id_usuario,
+      nivel_prioridade: prioridade || listPrioridade[0],
+      id_categoria: idCategoria ?? categorias[0]?.id_categoria,
     };
 
     const ticketAlterado = await ChamadasTickets.editarTicket(dados);
@@ -193,7 +198,17 @@ export const InfoTicket: React.FC<TicketProps> = ({
                 <div className="flex items-center gap-1 mt-5">
                   <Edit2 size={14} color="#BD2626" />
                   <button
-                    onClick={() => setEdit(!edit)}
+                    onClick={() => {
+                      setEdit(true);
+
+                      setIdStatus(ticket?.ticket.id_status ?? statusList[0]?.id_status);
+                      setIdCategoria(ticket?.ticket.id_categoria ?? categorias[0]?.id_categoria);
+                      setIdTecnico(
+                        parseInt(ticket?.ticket.atribuido_a) || usuarios[0]?.id_usuario
+                      );
+
+                      setPrioridade(ticket?.ticket.nivel_prioridade || listPrioridade[0]);
+                    }}
                     className="text-sm font-bold text-[#BD2626] hover:underline"
                   >
                     Editar
@@ -226,7 +241,7 @@ export const InfoTicket: React.FC<TicketProps> = ({
             <span className="font-semibold">Status:</span>
             <select
               className="w-40 border rounded px-2 py-1 text-xs truncate"
-              value={idStatus}
+              value={idStatus ?? statusList[0]?.id_status}
               onChange={(e) => setIdStatus(Number(e.target.value))}
             >
               {statusList &&
@@ -258,7 +273,7 @@ export const InfoTicket: React.FC<TicketProps> = ({
             <span className="font-semibold">Categoria:</span>
             <select
               className="w-40 border rounded px-2 py-1 text-xs truncate"
-              value={idCategoria}
+              value={idCategoria ?? categorias[0]?.id_categoria}
               onChange={(e) => setIdCategoria(Number(e.target.value))}
             >
               {categorias &&
@@ -290,7 +305,7 @@ export const InfoTicket: React.FC<TicketProps> = ({
             <span className="font-semibold">Prioridade:</span>
             <select
               className="border rounded px-2 py-1 text-xs"
-              value={prioridade}
+              value={prioridade || listPrioridade[0]}
               onChange={(e) => setPrioridade(e.target.value)}
             >
               {
@@ -324,12 +339,13 @@ export const InfoTicket: React.FC<TicketProps> = ({
             >
               {usuarios &&
                 [...usuarios]
+                  .filter((item) => item.situacao) //FILTRA PRIMEIRO
                   .sort((a, b) => {
-                    if (a.id_usuario === parseInt(ticket?.ticket.atribuido_a)) return -1;  // a vem primeiro
-                    if (b.id_usuario === parseInt(ticket?.ticket.atribuido_a)) return 1;   // b vem primeiro
+                    if (a.id_usuario === parseInt(ticket?.ticket.atribuido_a)) return -1;
+                    if (b.id_usuario === parseInt(ticket?.ticket.atribuido_a)) return 1;
                     return 0;
-                  }).
-                  map((item) => (
+                  })
+                  .map((item) => (
                     <option
                       key={item.id_usuario}
                       value={item.id_usuario}
@@ -342,7 +358,8 @@ export const InfoTicket: React.FC<TicketProps> = ({
                     >
                       {item.nome_usuario}
                     </option>
-                  ))}
+                  ))
+              }
             </select>
           </div>
 
