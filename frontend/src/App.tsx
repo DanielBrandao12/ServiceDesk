@@ -10,8 +10,12 @@ import { CategoriaView } from "./pages/categoria";
 import { UserView } from "./pages/user";
 import { Relatorio } from "./pages/relatorio";
 import PrivateRoute from "./components/privateRoute";
+import CardsInfo from "./pages/cardsInfo";
+
+
 
 function App() {
+  
   return (
     <>
       <Routes>
@@ -23,8 +27,9 @@ function App() {
         <Route path="/Ticket/:idTicket" element={<PrivateRoute element={<Ticket />}/>} />
         <Route path="/Status" element={<PrivateRoute element={<StatusView />}/>} />
         <Route path="/Categorias" element={<PrivateRoute element={<CategoriaView />}/>} />
-        <Route path="/Usuarios" element={<PrivateRoute element={<UserView />}/>} />
+       <Route path="/Usuarios" element={<PrivateRoute element={<UserView />}/>} />
         <Route path="/Relatorio" element={<PrivateRoute element={<Relatorio />}/>} />
+        <Route path="/CardsInfo" element={<CardsInfo />} />
       </Routes>
     </>
   );

@@ -44,7 +44,7 @@ const hashPassword = async (senha: string): Promise<string> => {
 const getUserAll = async (req: Request, res: Response | any) => {
   try {
     const users = await Usuarios.findAll({
-      attributes: ['id_usuario', 'nome_completo', 'email', 'nome_usuario', 'perfil'],
+      attributes: ['id_usuario', 'nome_completo', 'email', 'nome_usuario', 'perfil', 'situacao'],
     });
 
     return res.status(200).json(users);
@@ -82,9 +82,10 @@ const getUserId = async (req: Request, res: Response | any) => {
 // Criação de usuário
 const createUser = async (req: Request<{}, {}, CreateUserBody>, res: Response | any) => {
   try {
-    const { nome_completo, nome_usuario, email, senha, perfil } = req.body;
+    const { nome_completo, nome_usuario, email, senha, perfil, situacao } = req.body;
+    console.log(req.body)
 
-    if (!nome_completo || !nome_usuario || !email || !senha || !perfil) {
+    if (!nome_completo || !nome_usuario || !email || !senha || !perfil || !situacao) {
       return res.status(400).json({ message: 'Todos os campos são obrigatórios.' });
     }
 
@@ -104,6 +105,7 @@ const createUser = async (req: Request<{}, {}, CreateUserBody>, res: Response | 
       email,
       senha_hash: senhaBcrypt,
       perfil,
+      situacao
     });
 
     const { senha_hash, ...userWithoutPassword } = newUser.toJSON();
@@ -127,7 +129,7 @@ const updateUser = async (
 ) => {
   try {
     const { id } = req.params;
-    const { nome_completo, senha, perfil } = req.body;
+    const { nome_completo, senha, perfil, situacao } = req.body;
 
     const user = await Usuarios.findByPk(id);
     if (!user) {
@@ -137,6 +139,7 @@ const updateUser = async (
     // Atualiza dados (se fornecidos)
     user.nome_completo = nome_completo ?? user.nome_completo;
     user.perfil = perfil ?? user.perfil;
+    user.situacao = situacao ?? user.situacao;
 
     if (senha) {
       user.senha_hash = await hashPassword(senha);

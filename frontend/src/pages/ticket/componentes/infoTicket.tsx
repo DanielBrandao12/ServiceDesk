@@ -29,12 +29,14 @@ import type {
 import { formatarDataHora } from "../../../utils/dateHour";
 import { ChamadasTickets } from "../../../services/endpoints/tickets";
 import Alert from "../../../components/alert";
+import { temPermissao } from "../../../utils/verificaPermissao";
+import { getUserData } from "../../../utils/getUser";
 
 
 interface TicketProps {
   ticket?: TicketView; // array de tickets
   setLoadTicket: () => void;
-  handlePrint:  () => void;
+  handlePrint: () => void;
 }
 
 export const InfoTicket: React.FC<TicketProps> = ({
@@ -60,15 +62,17 @@ export const InfoTicket: React.FC<TicketProps> = ({
   const [message, setMessage] = useState<string>("")
   const [showConfirm, setShowConfirm] = useState(false);
 
- 
-  
+
+
   const listPrioridade: string[] = ["Prioridade Baixa", "Prioridade Média", "Prioridade Alta"]
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  const user: any = getUserData();
 
   useEffect(() => {
     chamadasCategoria.listarCategorias().then((res) => {
       setCategorias(res);
+
       const categoriaEncontrada = res.filter(
         (item) => ticket?.ticket.id_categoria === item.id_categoria
       );
@@ -77,6 +81,7 @@ export const InfoTicket: React.FC<TicketProps> = ({
 
     chamadasStatus.listarStatus().then((res) => {
       setStatusList(res);
+
       const statusEncontrado = res.filter(
         (item) => ticket?.ticket.id_status === item.id_status
       );
@@ -93,25 +98,28 @@ export const InfoTicket: React.FC<TicketProps> = ({
       setTecnico(tecnicoEncontrado);
     });
 
+    // 👇 aqui mantém vazio se não tiver
+    setPrioridade(ticket?.ticket.nivel_prioridade || "");
 
+    //  NÃO seta idStatus, idCategoria, idTecnico aqui
 
   }, [ticket]);
 
-const salvarEdicao = async () => {
-  const dados: any = {
-    id_ticket: ticket?.ticket.id_ticket,
-    id_status: idStatus ?? ticket?.ticket.id_status, // usa o novo valor se existir, senão mantém o original
-    atribuido_a: idTecnico ?? parseInt(ticket?.ticket.atribuido_a),
-    nivel_prioridade: prioridade || ticket?.ticket.nivel_prioridade,
-    id_categoria: idCategoria ?? ticket?.ticket.id_categoria,
-  };
+  const salvarEdicao = async () => {
+    const dados: any = {
+      id_ticket: ticket?.ticket.id_ticket,
+      id_status: idStatus ?? statusList[0]?.id_status,
+      atribuido_a: idTecnico ?? usuarios[0]?.id_usuario,
+      nivel_prioridade: prioridade || listPrioridade[0],
+      id_categoria: idCategoria ?? categorias[0]?.id_categoria,
+    };
 
-  const ticketAlterado = await ChamadasTickets.editarTicket(dados);
-  setLoadTicket();
-  setEdit(false);
-  setShowAlert(true);
-  setMessage(ticketAlterado.message);
-};
+    const ticketAlterado = await ChamadasTickets.editarTicket(dados);
+    setLoadTicket();
+    setEdit(false);
+    setShowAlert(true);
+    setMessage(ticketAlterado.message);
+  };
 
 
 
@@ -185,21 +193,39 @@ const salvarEdicao = async () => {
             <span className="font-medium">{tecnico[0]?.nome_usuario}</span>
           </div>
           <div className="flex  justify-between px-2">
-            <div className="flex items-center gap-1 mt-5">
-              <Edit2 size={14} color="#BD2626" />
-              <button
-                onClick={() => setEdit(!edit)}
-                className="text-sm font-bold text-[#BD2626] hover:underline"
-              >
-                Editar
-              </button>
-            </div>
-            <div className="flex items-center gap-1 mt-5">
-              <Trash2 size={14} color="#BD2626" />
-              <button onClick={handleDeleteClick} className="text-sm font-bold text-[#BD2626] hover:underline">
-                Excluir
-              </button>
-            </div>
+            {
+              temPermissao(user, "editarChamado") && (
+                <div className="flex items-center gap-1 mt-5">
+                  <Edit2 size={14} color="#BD2626" />
+                  <button
+                    onClick={() => {
+                      setEdit(true);
+
+                      setIdStatus(ticket?.ticket.id_status ?? statusList[0]?.id_status);
+                      setIdCategoria(ticket?.ticket.id_categoria ?? categorias[0]?.id_categoria);
+                      setIdTecnico(
+                        parseInt(ticket?.ticket.atribuido_a) || usuarios[0]?.id_usuario
+                      );
+
+                      setPrioridade(ticket?.ticket.nivel_prioridade || listPrioridade[0]);
+                    }}
+                    className="text-sm font-bold text-[#BD2626] hover:underline"
+                  >
+                    Editar
+                  </button>
+                </div>
+              )
+            }
+            {
+              temPermissao(user, "excluirChamado") && (
+                <div className="flex items-center gap-1 mt-5">
+                  <Trash2 size={14} color="#BD2626" />
+                  <button onClick={handleDeleteClick} className="text-sm font-bold text-[#BD2626] hover:underline">
+                    Excluir
+                  </button>
+                </div>
+              )
+            }
             <div className="flex items-center gap-1 mt-5">
               <Printer size={14} color="#BD2626" />
               <button onClick={handlePrint} className="text-sm font-bold text-[#BD2626] hover:underline">
@@ -215,25 +241,30 @@ const salvarEdicao = async () => {
             <span className="font-semibold">Status:</span>
             <select
               className="w-40 border rounded px-2 py-1 text-xs truncate"
-              value={idStatus}
+              value={idStatus ?? statusList[0]?.id_status}
               onChange={(e) => setIdStatus(Number(e.target.value))}
             >
               {statusList &&
-                statusList.map((item, index) => (
-                  <option
-                    key={index}
-                    value={item.id_status}
-                    className={
-                      item.id_status === ticket?.ticket.id_status
-                        ? "text-green-600"
-                        : ""
-                    }
-                    
-                    title={item.nome}
-                  >
-                    {item.nome}
-                  </option>
-                ))}
+                [...statusList]                     // cria uma cópia
+                  .sort((a, b) => {
+                    if (a.id_status === ticket?.ticket.id_status) return -1;  // a vem primeiro
+                    if (b.id_status === ticket?.ticket.id_status) return 1;   // b vem primeiro
+                    return 0;
+                  })
+                  .map((item) => (
+                    <option
+                      key={item.id_status}
+                      value={item.id_status}
+                      title={item.nome}
+                      className={
+                        item.id_status === ticket?.ticket.id_status
+                          ? "text-green-600"
+                          : ""
+                      }
+                    >
+                      {item.nome}
+                    </option>
+                  ))}
             </select>
           </div>
 
@@ -242,24 +273,30 @@ const salvarEdicao = async () => {
             <span className="font-semibold">Categoria:</span>
             <select
               className="w-40 border rounded px-2 py-1 text-xs truncate"
-              value={idCategoria}
+              value={idCategoria ?? categorias[0]?.id_categoria}
               onChange={(e) => setIdCategoria(Number(e.target.value))}
             >
               {categorias &&
-                categorias.map((item) => (
-                  <option
-                    key={item.id_categoria}
-                    value={item.id_categoria}
-                    className={
-                      item.id_categoria === ticket?.ticket.id_categoria
-                        ? "text-green-600"
-                        : ""
-                    }
-                    title={item.nome}
-                  >
-                    {item.nome}
-                  </option>
-                ))}
+                [...categorias]
+                  .sort((a, b) => {
+                    if (a.id_categoria === ticket?.ticket.id_categoria) return -1;  // a vem primeiro
+                    if (b.id_categoria === ticket?.ticket.id_categoria) return 1;   // b vem primeiro
+                    return 0;
+                  })
+                  .map((item) => (
+                    <option
+                      key={item.id_categoria}
+                      value={item.id_categoria}
+                      className={
+                        item.id_categoria === ticket?.ticket.id_categoria
+                          ? "text-green-600"
+                          : ""
+                      }
+                      title={item.nome}
+                    >
+                      {item.nome}
+                    </option>
+                  ))}
             </select>
           </div>
 
@@ -268,20 +305,26 @@ const salvarEdicao = async () => {
             <span className="font-semibold">Prioridade:</span>
             <select
               className="border rounded px-2 py-1 text-xs"
-              value={prioridade}
+              value={prioridade || listPrioridade[0]}
               onChange={(e) => setPrioridade(e.target.value)}
             >
               {
-                listPrioridade.map((item, index)=>(
-                    <option  key={index} value={item} 
-                     className={
-                      item === ticket?.ticket.prioridade
-                        ? "text-green-600"
-                        : ""
-                    }
-                    title={prioridade}
+                listPrioridade
+                  .sort((a, b) => {
+                    if (a === ticket?.ticket.nivel_prioridade) return -1;  // a vem primeiro
+                    if (b === ticket?.ticket.nivel_prioridade) return 1;   // b vem primeiro
+                    return 0;
+                  })
+                  .map((item, index) => (
+                    <option key={index} value={item}
+                      className={
+                        item === ticket?.ticket.nivel_prioridade
+                          ? "text-green-600"
+                          : ""
+                      }
+                      title={prioridade}
                     >{item}</option>
-                ))
+                  ))
               }
             </select>
           </div>
@@ -295,20 +338,28 @@ const salvarEdicao = async () => {
               onChange={(e) => setIdTecnico(Number(e.target.value))}
             >
               {usuarios &&
-                usuarios.map((item) => (
-                  <option
-                    key={item.id_usuario}
-                    value={item.id_usuario}
-                    className={
-                      item.id_usuario === parseInt(ticket?.ticket.atribuido_a)
-                        ? "text-green-600"
-                        : ""
-                    }
-                    title={item.nome_usuario}
-                  >
-                    {item.nome_usuario}
-                  </option>
-                ))}
+                [...usuarios]
+                  .filter((item) => item.situacao) //FILTRA PRIMEIRO
+                  .sort((a, b) => {
+                    if (a.id_usuario === parseInt(ticket?.ticket.atribuido_a)) return -1;
+                    if (b.id_usuario === parseInt(ticket?.ticket.atribuido_a)) return 1;
+                    return 0;
+                  })
+                  .map((item) => (
+                    <option
+                      key={item.id_usuario}
+                      value={item.id_usuario}
+                      className={
+                        item.id_usuario === parseInt(ticket?.ticket.atribuido_a)
+                          ? "text-green-600"
+                          : ""
+                      }
+                      title={item.nome_usuario}
+                    >
+                      {item.nome_usuario}
+                    </option>
+                  ))
+              }
             </select>
           </div>
 

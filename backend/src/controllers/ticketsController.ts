@@ -161,7 +161,7 @@ export const updateTicket = async (
 
 
 
-export const getTicketsClose = async (req: Request, res: Response) => {
+export const getTicketsClose = async (req: Request | any, res: Response | any) => {
   try {
  
     const tickets = await ViewTickets.findAll({
@@ -194,7 +194,7 @@ export const getTicketsClose = async (req: Request, res: Response) => {
       return acc;
     }, {});
 
-    //  Junta tickets + respostas
+    //Junta tickets + respostas
     const resultado = tickets.map((ticket) => ({
       ...ticket,
       respostas: respostasPorTicket[ticket.id_ticket] || [],
@@ -439,11 +439,11 @@ export const getDashboardData = async (req: Request, res: Response): Promise<Res
     const abertos = tickets.filter((t) => t.status !== "Fechado").length;
     const fechados = tickets.filter((t) => t.status === "Fechado").length;
     const naoAtribuido = tickets.filter((t) => t.atribuido_a === null).length;
-    const atribuidos = tickets.filter((t) => t.atribuido_a === null).length;
-    const emAtendimento = tickets.filter((t) => t.status === "Em Atendimento").length;
+    const atribuidos = tickets.filter((t) => t.atribuido_a !== null).length;
+    const emAtendimento = tickets.filter((t) => t.status === "Em atendimento").length;
     const aguardando = tickets.filter((t) => t.status === "Aguardando Atendimento").length;
     const aguardandoClassificacao = tickets.filter((t) => t.categorias === null).length;
-    const pendenteResposta = tickets.filter((t) => t.categorias === "Pendente Resposta do Solicitante").length;
+    const pendenteResposta = tickets.filter((t) => t.status === "Pendente Resposta do Solicitante").length;
 
     // === Agrupamento por categoria ===
     const categoriasContagem: Record<string, number> = {};
@@ -464,6 +464,68 @@ export const getDashboardData = async (req: Request, res: Response): Promise<Res
     // === Retorno para o front ===
     return res.status(200).json({
       periodo,
+      total,
+      status: {
+        abertos,
+        fechados,
+        emAtendimento,
+        aguardando,
+        naoAtribuido,
+        atribuidos,
+        aguardandoClassificacao,
+        pendenteResposta
+      },
+      categorias: categoriasTop8,
+    });
+  } catch (error: any) {
+    console.error("Erro ao gerar dados do dashboard:", error);
+    return res.status(500).json({
+      message: "Erro ao gerar dados do dashboard",
+      error: error.message,
+    });
+  }
+};
+
+//Precisa refatorar essa parte 12/12/2025
+export const getCardsInfo = async (req: Request, res: Response): Promise<Response | any> => {
+ 
+
+  try {
+   
+  
+    // === Busca tickets no período ===
+    const tickets = await ViewTickets.findAll();
+
+    // === Contagens por status ===
+    const total = tickets.length;
+    const abertos = tickets.filter((t) => t.status !== "Fechado").length;
+    const fechados = tickets.filter((t) => t.status === "Fechado").length;
+    const naoAtribuido = tickets.filter((t) => t.atribuido_a === null).length;
+    const atribuidos = tickets.filter((t) => t.atribuido_a !== null).length;
+    const emAtendimento = tickets.filter((t) => t.status === "Em atendimento").length;
+    const aguardando = tickets.filter((t) => t.status === "Aguardando Atendimento").length;
+    const aguardandoClassificacao = tickets.filter((t) => t.categorias === null).length;
+    const pendenteResposta = tickets.filter((t) => t.status === "Pendente Resposta do Solicitante").length;
+
+    // === Agrupamento por categoria ===
+    const categoriasContagem: Record<string, number> = {};
+
+    for (const t of tickets) {
+      const categoria = t.categorias || "Sem categoria";
+      categoriasContagem[categoria] = (categoriasContagem[categoria] || 0) + 1;
+    }
+
+    // transforma em array e ordena por quantidade (decrescente)
+    const categoriasOrdenadas = Object.entries(categoriasContagem)
+      .sort((a, b) => b[1] - a[1]) // ordena do maior pro menor
+      .slice(0, 8); // pega só as 8 primeiras
+
+    // transforma de volta em objeto
+    const categoriasTop8 = Object.fromEntries(categoriasOrdenadas);
+
+    // === Retorno para o front ===
+    return res.status(200).json({
+  
       total,
       status: {
         abertos,

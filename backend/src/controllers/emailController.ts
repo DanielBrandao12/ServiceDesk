@@ -1,5 +1,5 @@
 import transporter from '../config/nodemailerConfig';
-import { simpleParser } from 'mailparser';
+import { AddressObject, simpleParser } from 'mailparser';
 import { conectarIMAP } from '../services/email/emailService';
 import { criarChamadoPorEmail, getTicketPorCodigo } from './ticketsController';
 import { createRespostaAuto } from './respostasController';
@@ -19,13 +19,13 @@ export const enviarRespostaAutomatica = async (
     if (!process.env.EMAIL_USER) {
       throw new Error("EMAIL_USER não está definido nas variáveis de ambiente.");
     }
-    console.log(anexos)
+    
     await transporter.sendMail({
       from: process.env.EMAIL_USER,
       to: remetente,
       subject: `Atualização do chamado - ${codigoTicket}`,
       html: mensagem,//criar um template para respostas
-       attachments: anexos?.map((anexo: { nome: any; arquivo: any; tipo: any; }) => ({
+      attachments: anexos?.map((anexo: { nome: any; arquivo: any; tipo: any; }) => ({
         filename: anexo.nome,
         content: anexo.arquivo,
         contentType: anexo.tipo,
@@ -50,6 +50,7 @@ export const checkEmails = async () => {
     console.log("Conexão estabelecida com sucesso!");
 
     await connection.mailboxOpen("INBOX");
+
 
     const uids = await connection.search({ seen: false });
     console.log(`Encontrados ${uids.length} e-mails não lidos.`);
@@ -76,6 +77,8 @@ export const checkEmails = async () => {
             arquivo: att.content,
           })),
         };
+
+
         const codigoTicket = extrairCodigoTicket(chamado.assunto);
 
         if (codigoTicket) {
@@ -87,26 +90,39 @@ export const checkEmails = async () => {
               mensagem,
               chamado.anexos
             );
-            connection.messageFlagsAdd(message.seq, ["\\Seen"]);
+            connection.messageFlagsAdd(message.seq, ['\\Seen']);
             continue;
           }
         }
 
-        const ticketCriado = await criarChamadoPorEmail(chamado);
+        const remetente = getEmailAddress(chamado.remetente);
+        //ignora email de erro do LocaWeb
+        if (
+          remetente.includes("postmaster@") ||
+          remetente.includes("mailer-daemon") ||
+          remetente.includes("mail delivery system") ||
+          remetente.includes("bounce@")
+        ) {
+           connection.messageFlagsAdd(message.seq, ['\\Seen']);
+        } else {
 
-        await sendEmail({
-          to: chamado.remetente,
-          subject: `Chamado Criado - ${ticketCriado.ticketCriado?.codigo_ticket}`,
-          html: ticketCriadoTemplate(ticketCriado.ticketCriado?.codigo_ticket),
-          attachments: [
-            {
-              filename: "logo.png",
-              path: "../backend/public/images/logo.png",
-              cid: "logo",
-            },
-          ],
-        });
-       connection.messageFlagsAdd(message.seq, ["\\Seen"]);
+          const ticketCriado = await criarChamadoPorEmail(chamado);
+
+          await sendEmail({
+            to: chamado.remetente,
+            subject: `Chamado Criado - ${ticketCriado.ticketCriado?.codigo_ticket}`,
+            html: ticketCriadoTemplate(ticketCriado.ticketCriado?.codigo_ticket),
+            attachments: [
+              {
+                filename: "logo.png",
+                path: "../backend/public/images/logo.png",
+                cid: "logo",
+              },
+            ],
+          });
+          connection.messageFlagsAdd(message.seq, ['\\Seen']);
+        }
+
       } catch (error) {
         console.error(`Erro ao processar o e-mail:`, error);
       }
@@ -115,8 +131,12 @@ export const checkEmails = async () => {
     console.error("Erro ao verificar e-mails:", error);
   } finally {
     if (connection) {
+       try {
       await connection.logout();
       console.log("Conexão IMAP encerrada com sucesso!");
+    } catch (logoutError) {
+      console.error("Erro ao encerrar conexão IMAP:", logoutError);
+    }
     }
   }
 };
@@ -127,8 +147,8 @@ const extrairCodigoTicket = (assunto: string) => {
   return match ? match[1] : null; // Retorna o código se encontrado, caso contrário retorna null
 };
 
-const  limparMensagemEmail = (html: string | undefined) => {
-    if (!html) return "";
+const limparMensagemEmail = (html: string | undefined) => {
+  if (!html) return "";
 
   // Remove <head>, <style> e <script> — só lixo técnico
   html = html
@@ -169,4 +189,22 @@ const  limparMensagemEmail = (html: string | undefined) => {
     .trim();
 
   return atual;
+}
+
+
+//Função utilitária para extrair o e-mail como string
+
+function getEmailAddress(from: string | AddressObject): string {
+  if (typeof from === "string") {
+    return from.toLowerCase();
+  }
+
+  if (from?.value?.length) {
+    return from.value
+      .map(v => v.address)
+      .join(",")
+      .toLowerCase();
+  }
+
+  return "";
 }

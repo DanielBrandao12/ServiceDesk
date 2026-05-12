@@ -5,6 +5,7 @@ export interface UsuariosAttributes {
   senha_hash?: string | null;
   nome_usuario?: string | null;
   perfil?: string;
+  situacao?: boolean | null;
 }
 
 

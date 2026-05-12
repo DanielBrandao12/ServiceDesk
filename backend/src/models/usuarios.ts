@@ -16,6 +16,7 @@ export class Usuarios extends Model<UsuariosAttributes, UsuariosCreationAttribut
   public senha_hash?: string | null;
   public nome_usuario?: string | null;
   public perfil!: string;
+  public situacao?: boolean | null | undefined;
 
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
@@ -51,6 +52,10 @@ export default function initUsuariosModel(sequelize: Sequelize): typeof Usuarios
         allowNull: false,
         defaultValue: "Admin",
       },
+      situacao: {
+      type: DataTypes.BOOLEAN,
+        allowNull: true,
+      }
     },
     {
       sequelize,

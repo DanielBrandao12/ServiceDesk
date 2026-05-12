@@ -10,9 +10,7 @@ interface ImapConfig {
     user: string;
     pass: string;
   };
-  tlsOptions: {
-    rejectUnauthorized: boolean;
-  };
+
   authTimeout: number;
 }
 
@@ -24,7 +22,6 @@ const imapConfig: ImapConfig = {
     user: process.env.EMAIL_USER || '',
     pass: process.env.EMAIL_PASSWORD || '',
   },
-  tlsOptions: { rejectUnauthorized: false },
   authTimeout: 60000,
 };
 

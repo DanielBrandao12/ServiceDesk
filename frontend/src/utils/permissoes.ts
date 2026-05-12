@@ -1,0 +1,67 @@
+export const permissoes = {
+    admin: {
+        verTodosChamados: true,
+        criarChamado: true,
+        editarChamado: true,
+        excluirChamado: true,
+        gerenciarUsuarios: true,
+        gerenciarStatus: true,
+        gerenciarCategorias: true,
+        enviarMensagem: true,
+        verMensagens: true,
+        criarAnotacoes: true,
+        verAnotacoes: true,
+        criarUsuario: true,
+        editarUsuario: true,
+        changeAdmin: true
+    },
+    gerente: {
+
+        verTodosChamados: true,
+        criarChamado: true,
+        editarChamado: true,
+        excluirChamado: true,
+        gerenciarUsuarios: true,
+        gerenciarStatus: true,
+        gerenciarCategorias: true,
+        enviarMensagem: true,
+        verMensagens: true,
+        criarAnotacoes: true,
+        verAnotacoes: true,
+        criarUsuario: true,
+        editarUsuario: false,
+         changeAdmin: false
+    },
+    tecnico: {
+        verTodosChamados: true,
+        criarChamado: true,
+        editarChamado: true,
+        excluirChamado: false,
+        gerenciarUsuarios: true,
+        gerenciarStatus: false,
+        gerenciarCategorias: false,
+        enviarMensagem: true,
+        verMensagens: true,
+        criarAnotacoes: true,
+        verAnotacoes: true,
+        criarUsuario: false,
+        editarUsuario: false,
+         changeAdmin: false
+    },
+    usuario: {
+        verTodosChamados: true,
+        criarChamado: false,
+        editarChamado: false,
+        excluirChamado: false,
+        gerenciarUsuarios: false,
+        gerenciarStatus: false,
+        gerenciarCategorias: false,
+        enviarMensagem: false,
+        verMensagens: true,
+        criarAnotacoes: false,
+        verAnotacoes: true,
+        criarUsuario: false,
+        editarUsuario: false,
+         changeAdmin: false
+    }
+}
